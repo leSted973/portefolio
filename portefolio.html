@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mon Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ===== VARIABLES ===== */
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --card: #161616;
+      --border: #222222;
+      --accent: #e8ff47;
+      --accent2: #ff6b35;
+      --text: #f0f0f0;
+      --muted: #666666;
+      --radius: 12px;
+    }
+
+    /* ===== RESET ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* ===== NOISE OVERLAY ===== */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.4;
+    }
+
+    /* ===== LAYOUT ===== */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+
+    /* ===== NAV ===== */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 1.2rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10,10,10,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+    }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      font-size: 0.82rem;
+      font-family: 'DM Mono', monospace;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* ===== HERO ===== */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+      width: 100%;
+    }
+    .hero-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--accent);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .hero-tag::before {
+      content: '';
+      width: 24px;
+      height: 1px;
+      background: var(--accent);
+    }
+    h1 {
+      font-size: clamp(3rem, 6vw, 5.5rem);
+      font-weight: 800;
+      line-height: 1.0;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+    }
+    h1 .highlight {
+      color: var(--accent);
+      display: block;
+    }
+    .hero-desc {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.8;
+      margin-bottom: 2.5rem;
+      max-width: 420px;
+    }
+    .hero-desc strong { color: var(--text); font-weight: 500; }
+    .btn-group { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn {
+      padding: 0.8rem 1.8rem;
+      border-radius: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .btn-primary { background: var(--accent); color: #0a0a0a; font-weight: 500; }
+    .btn-primary:hover { background: #d4eb30; transform: translateY(-2px); }
+    .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Hero contact info */
+    .hero-contact {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      transition: border-color 0.2s;
+    }
+    .contact-item:hover { border-color: var(--accent); }
+    .contact-icon {
+      width: 36px; height: 36px;
+      background: var(--bg);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .contact-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .contact-value {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--text);
+    }
+    .contact-value a:hover { color: var(--accent); }
+
+    /* ===== SECTIONS ===== */
+    section { padding: 6rem 0; }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin-bottom: 3.5rem;
+    }
+    .section-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+    }
+    .section-line { flex: 1; height: 1px; background: var(--border); }
+    h2 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    /* ===== PROJETS ===== */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+    .project-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.8rem;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .project-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s;
+    }
+    .project-card:hover { border-color: #333; transform: translateY(-4px); }
+    .project-card:hover::before { transform: scaleX(1); }
+    .project-badge {
+      display: inline-block;
+      padding: 0.25rem 0.7rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      margin-bottom: 1rem;
+    }
+    .project-card h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+    }
+    .project-card p {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 1.2rem;
+    }
+    .project-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .tag {
+      padding: 0.2rem 0.6rem;
+      background: rgba(232, 255, 71, 0.08);
+      border: 1px solid rgba(232, 255, 71, 0.2);
+      border-radius: 4px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--accent);
+    }
+    .project-links { display: flex; gap: 0.8rem; }
+    .project-link {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: color 0.2s;
+    }
+    .project-link:hover { color: var(--accent); }
+
+    /* ===== CV & LETTRE ===== */
+    .docs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .doc-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      transition: border-color 0.2s;
+    }
+    .doc-card:hover { border-color: #333; }
+    .doc-icon {
+      font-size: 2rem;
+      width: 56px; height: 56px;
+      background: var(--bg);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border);
+    }
+    .doc-card h3 { font-size: 1.1rem; font-weight: 700; }
+    .doc-card p {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.7;
+      flex: 1;
+    }
+
+    /* ===== ABOUT ===== */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+    .about-text p {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.9;
+      margin-bottom: 1rem;
+    }
+    .about-text p strong { color: var(--text); font-weight: 500; }
+    .skills-list {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+    }
+    .skills-list h3 {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+    }
+    .skill-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--border);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+    }
+    .skill-item:last-child { border-bottom: none; }
+    .skill-bar {
+      width: 100px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .skill-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 0;
+      text-align: center;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .hero-grid, .docs-grid, .about-grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      h1 { font-size: 2.8rem; }
+    }
+
+    /* ===== VEILLE ===== */
+    .veille-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .veille-filters {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 0.35rem 0.9rem;
+      border-radius: 20px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn.active, .filter-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(232,255,71,0.07);
+    }
+    .veille-status {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .veille-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.2rem;
+    }
+    .veille-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      transition: all 0.25s;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+    }
+    .veille-card:hover {
+      border-color: #333;
+      transform: translateY(-3px);
+    }
+    .veille-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .veille-source {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .veille-cat {
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.05em;
+      font-weight: 500;
+    }
+    .cat-ia { background: rgba(232,255,71,0.12); color: var(--accent); }
+    .cat-web { background: rgba(255,107,53,0.12); color: var(--accent2); }
+    .cat-secu { background: rgba(100,160,255,0.12); color: #64a0ff; }
+    .cat-devops { background: rgba(160,100,255,0.12); color: #a064ff; }
+    .cat-data { background: rgba(100,220,180,0.12); color: #64dcb4; }
+    .veille-card h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.35;
+      letter-spacing: -0.01em;
+    }
+    .veille-card p {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.6;
+      flex: 1;
+    }
+    .veille-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .veille-date {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: #444;
+    }
+    .veille-arrow {
+      font-size: 0.8rem;
+      color: var(--muted);
+      transition: color 0.2s, transform 0.2s;
+    }
+    .veille-card:hover .veille-arrow { color: var(--accent); transform: translate(3px, -3px); }
+    .veille-loading {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 3rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    .veille-loading .spinner {
+      width: 28px; height: 28px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .hero-left > * {
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards;
+    }
+    .hero-left > *:nth-child(1) { animation-delay: 0.1s; }
+    .hero-left > *:nth-child(2) { animation-delay: 0.2s; }
+    .hero-left > *:nth-child(3) { animation-delay: 0.3s; }
+    .hero-left > *:nth-child(4) { animation-delay: 0.4s; }
+    .hero-contact {
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.5s forwards;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== NAV ===== -->
+  <nav>
+    <div class="nav-logo">// PORTFOLIO</div>
+    <ul class="nav-links">
+      <li><a href="#projets">projets</a></li>
+      <li><a href="#documents">CV & lettre</a></li>
+      <li><a href="#about">à propos</a></li>
+      <li><a href="#veille">veille</a></li>
+      <li><a href="#contact">contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- ===== HERO ===== -->
+  <section id="hero">
+    <div class="container">
+      <div class="hero-grid">
+        <div class="hero-left">
+          <div class="hero-tag">Disponible</div>
+          <h1>
+            <!-- 👇 REMPLACE PAR TON PRÉNOM ET NOM -->
+            Stéddy 
+            <span class="highlight">MARIE-JOSEPH
+          </h1>
+          <p class="hero-desc">
+            <!-- 👇 REMPLACE PAR TA DESCRIPTION -->
+            <strong>Développeur Web</strong> passionné par la création d'interfaces modernes et performantes. Je transforme des idées en expériences digitales mémorables.
+          </p>
+          <div class="btn-group">
+            <a href="#projets" class="btn btn-primary">→ Voir mes projets</a>
+            <a href="#documents" class="btn btn-ghost">↓ Mon CV</a>
+          </div>
+        </div>
+
+        <!-- ===== INFOS DE CONTACT ===== -->
+        <div class="hero-contact">
+          <div class="contact-item">
+            <div class="contact-icon">✉</div>
+            <div>
+              <div class="contact-label">Email</div>
+              <!-- 👇 REMPLACE PAR TON EMAIL -->
+              <div class="contact-value"><a href="mailto:ton@email.com">steddymj@gmail.com</a></div>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-icon">📱</div>
+            <div>
+              <div class="contact-label">Téléphone</div>
+              <!-- 👇 REMPLACE PAR TON NUMÉRO -->
+              <div class="contact-value"><a href="tel:+33600000000">+594 694 49 15 90</a></div>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-icon">⌥</div>
+            <div>
+              <div class="contact-label">GitHub</div>
+              <!-- 👇 REMPLACE PAR TON GITHUB -->
+              <div class="contact-value"><a href="https://github.com/ton-profil" target="_blank">https://github.com/leSted973/portefolio.git</a></div>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-icon">💼</div>
+            <div>
+              <div class="contact-label">LinkedIn</div>
+              <!-- 👇 REMPLACE PAR TON LINKEDIN (optionnel) -->
+              <div class="contact-value"><a href="https://linkedin.com/in/ton-profil" target="_blank">linkedin.com/in/ton-profil</a></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PROJETS ===== -->
+  <section id="projets">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2>Projets</h2>
+        <div class="section-line"></div>
+      </div>
+
+      <div class="projects-grid">
+
+        <!-- ===== PROJET 1 — REMPLACE ===== -->
+        <div class="project-card">
+          <span class="project-badge">2025</span>
+          <h3>Nom du Projet</h3>
+          <p>Décris ton projet en quelques lignes. Ce qu'il fait, pourquoi tu l'as fait, et ce que tu as appris.</p>
+          <div class="project-tags">
+            <span class="tag">React</span>
+            <span class="tag">Node.js</span>
+            <span class="tag">MongoDB</span>
+          </div>
+          <div class="project-links">
+            <a href="https://github.com/" target="_blank" class="project-link">⌥ GitHub</a>
+            <a href="#" target="_blank" class="project-link">↗ Live</a>
+          </div>
+        </div>
+
+        <!-- ===== PROJET 2 — REMPLACE ===== -->
+        <div class="project-card">
+          <span class="project-badge">2025</span>
+          <h3>Nom du Projet</h3>
+          <p>Décris ton projet en quelques lignes. Ce qu'il fait, pourquoi tu l'as fait, et ce que tu as appris.</p>
+          <div class="project-tags">
+            <span class="tag">Python</span>
+            <span class="tag">FastAPI</span>
+            <span class="tag">PostgreSQL</span>
+          </div>
+          <div class="project-links">
+            <a href="https://github.com/" target="_blank" class="project-link">⌥ GitHub</a>
+            <a href="#" target="_blank" class="project-link">↗ Live</a>
+          </div>
+        </div>
+
+        <!-- ===== PROJET 3 — REMPLACE ===== -->
+        <div class="project-card">
+          <span class="project-badge">2024</span>
+          <h3>Nom du Projet</h3>
+          <p>Décris ton projet en quelques lignes. Ce qu'il fait, pourquoi tu l'as fait, et ce que tu as appris.</p>
+          <div class="project-tags">
+            <span class="tag">HTML/CSS</span>
+            <span class="tag">JavaScript</span>
+          </div>
+          <div class="project-links">
+            <a href="https://github.com/" target="_blank" class="project-link">⌥ GitHub</a>
+            <a href="#" target="_blank" class="project-link">↗ Live</a>
+          </div>
+        </div>
+
+        <!-- COPIE CE BLOC POUR AJOUTER UN PROJET -->
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CV & LETTRE DE MOTIVATION ===== -->
+  <section id="documents">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2>Documents</h2>
+        <div class="section-line"></div>
+      </div>
+
+      <div class="docs-grid">
+        <div class="doc-card">
+          <div class="doc-icon">📄</div>
+          <h3>Curriculum Vitae</h3>
+          <p>Mon CV détaillant mes expériences professionnelles, formations, et compétences techniques.</p>
+          <!-- 👇 REMPLACE "cv.pdf" PAR LE NOM DE TON FICHIER CV dans le même dossier -->
+          <a href="JVBERi0xLjQKJZOMi54gUmVwb3J0TGFiIEdlbmVyYXRlZCBQREYgZG9jdW1lbnQgKG9wZW5zb3VyY2UpCjEgMCBvYmoKPDwKL0YxIDIgMCBSIC9GMiAzIDAgUgo+PgplbmRvYmoKMiAwIG9iago8PAovQmFzZUZvbnQgL0hlbHZldGljYSAvRW5jb2RpbmcgL1dpbkFuc2lFbmNvZGluZyAvTmFtZSAvRjEgL1N1YnR5cGUgL1R5cGUxIC9UeXBlIC9Gb250Cj4+CmVuZG9iagozIDAgb2JqCjw8Ci9CYXNlRm9udCAvSGVsdmV0aWNhLUJvbGQgL0VuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcgL05hbWUgL0YyIC9TdWJ0eXBlIC9UeXBlMSAvVHlwZSAvRm9udAo+PgplbmRvYmoKNCAwIG9iago8PAovQ29udGVudHMgOCAwIFIgL01lZGlhQm94IFsgMCAwIDU5NS4yNzU2IDg0MS44ODk4IF0gL1BhcmVudCA3IDAgUiAvUmVzb3VyY2VzIDw8Ci9Gb250IDEgMCBSIC9Qcm9jU2V0IFsgL1BERiAvVGV4dCAvSW1hZ2VCIC9JbWFnZUMgL0ltYWdlSSBdCj4+IC9Sb3RhdGUgMCAvVHJhbnMgPDwKCj4+IAogIC9UeXBlIC9QYWdlCj4+CmVuZG9iago1IDAgb2JqCjw8Ci9QYWdlTW9kZSAvVXNlTm9uZSAvUGFnZXMgNyAwIFIgL1R5cGUgL0NhdGFsb2cKPj4KZW5kb2JqCjYgMCBvYmoKPDwKL0F1dGhvciAoYW5vbnltb3VzKSAvQ3JlYXRpb25EYXRlIChEOjIwMjYwNTA2MDAzOTM4KzAwJzAwJykgL0NyZWF0b3IgKGFub255bW91cykgL0tleXdvcmRzICgpIC9Nb2REYXRlIChEOjIwMjYwNTA2MDAzOTM4KzAwJzAwJykgL1Byb2R1Y2VyIChSZXBvcnRMYWIgUERGIExpYnJhcnkgLSBcKG9wZW5zb3VyY2VcKSkgCiAgL1N1YmplY3QgKHVuc3BlY2lmaWVkKSAvVGl0bGUgKHVudGl0bGVkKSAvVHJhcHBlZCAvRmFsc2UKPj4KZW5kb2JqCjcgMCBvYmoKPDwKL0NvdW50IDEgL0tpZHMgWyA0IDAgUiBdIC9UeXBlIC9QYWdlcwo+PgplbmRvYmoKOCAwIG9iago8PAovRmlsdGVyIFsgL0FTQ0lJODVEZWNvZGUgL0ZsYXRlRGVjb2RlIF0gL0xlbmd0aCAzMzgxCj4+CnN0cmVhbQpHYXUwRmdOKSUuJnEvQTVpK1xCS2A+SVQsaWJdRTdjOG9PaT87JnUqWG11aUVkMS50RCU0UVFNPFZ1PDUhL15hbmZwM2wnUDpGbVA4KkZqX2wtIWVeTiRTMjlncz0qNE86UGpscV5FYktQT1U1NVAiSUpuLVxIRSJaQGorPyNcQC1fJG4lOFkuajNBSkRwYk4pLGlzb0k5SlcmSi02bE1WRExfIUpjUlovbytaKjFbZSYhLWswZDNOXi5PRChUPDJWL21vMTVgOUFOR0FtOU1xPnRQJUtUZ1UqNTdpYFlDJUxhZVlnalMuYlYoUVV1Zy5ZaVBKJTYjMTtiby0uZGM4OSw/bSxSSiQzPEtYT2UxP2ooRj4jQjdNPE9AK1w4SXM0YUQ9QGRzR0BCV2VdLmU8bl9bSlFbLCpLZjZAaTtqWy5lKGhHR3JscVksTkVdUXI3Z3FvPFhXQ0kvNCcpNDk1TEoqVltebVEkP1s3ITE3OGk5XSgrXz5qP0hxOG0wVCRYOmgqOUQvMS9vcVNKXygoY05abjMvazpQcEltaUhAXz4zcTtPJjhARk1eNzc2JjFmLDI4VyIkNzErLGNVRGM8Ji1mbzFtRENEaD5zS1AhQ08rJXJIT2whUXFeakwiT1NxIXFuTDU5PCY0aCZVRVo5IV9LP1NEQig4WURkIU9lcC4nKyMhaltuTHA7biFuKjUkTVNVUjJccXRvMjMwNSNDNFMzTXMmMy90UWFDJCNtUWcuOCJ0QDdccFpjVCkwaUZhTldTN09VL0pYNVtnJj5jYltsQkFfVTFPLjVWNlU9YDJFUVFgJVpWbyI3MyRjVlcjN1BIX0E+VD04RCM5ZmdAN1tfMkU3JClaSGlLdSRtVzVxcE9TVDBxUCF0NnI1QSZJcyVWSGFsNUpoKiJdaWEjXj87Y1F0OnJaWmg6b0IhUXJjZSU5IVl0a1AvX0JfX1dJLU1vMk1LM15LWFFJbiFrR0czUGtzdVpGU1NEb0k1Rm4uIVo8Z1ZYM2lUbUdDTTZIKXFzR1hhRjxvVmJYY2VgNm03cEZiWkRzNUpNWTQwdSYjZl5CWWJpNzQwPF4wMG5fKiRDNiljI2kjKThVQkNbbl5KO2FYLnQzcS5wcExsQlYzYVYhSjhhVlA+Q2UpI1ReN1xwW0AnYUcrJT1gMTcuZ3E7X1Q9JUUlWkRyMG0xSkcsI2FDcUI9cVdqal81NWJvYUliTHQqS0hGR2doS0pCMWBTPFBORGRySz8+czQpVyxOJVdqLFNZPEJqbyxHTy1uQSZLTC5EbSJgMHFiWjRFJys7JSwxRiswYEo4aC03Y1E6Ulo3Z1opcUxTMypwaWF0bF1JVXQwYWpXS0EsQkkjZ2hyTGhcXF9eJFNqVVc3VkQoRVBKS1xQVHRAWi5QIy5NYT1WNmE8V2FraG1lYThJRjJCbE0wcmJcXVQnRDheSThNKyRVaFE0cFBlQU9AU01dZyM7RkFWJUx0Uk04WCtuVVAqM0lRU2o6UjdVYkc7XEFfPW9cNDtPRUJxay5kZUBGdCZEYkdDVDBQKUM/PkdkPys+XEZdNCdXQGVtWm8lUFRxVjR0N2wpOCJQQGlmdWc4PUNCcCFrV1NCYHBqNmdiVjxkazR0Wikwb2xZYktLMF5oaGJXbEsrMTVPVmNRdGBHTyExQCI3M1tEKUpiRVxQK1VcIktTcFguW1gzZCpiLGxOJXVlLUYmIkpESWFtKUNhWz1HWyw5O0VDXT5yU0s6JlxhNUwrJ19wcVEwU2Z1Si9uMmxZcEstKHQ3Kz1lO09xMHQ7ZW5BTiYpMT1DX1tuTUNPOD5kKVpHM2EoZGwnYlQxNyhHOEshckJPaCZVbFcjO2ApJjYmTS9yLjNRXi0iUD9PIlslMSlmJWJyQT86QmQpJk9tbChmYVtiRDhfYDRSI0o2OUFQbjBLMk1AcTcuKiQhJ1tBM0ZDPSQtRGlBb3BATmIlM01rJDk2SDZraVxtVSkock9ZbEZyYmdmR080S2ZcVWdUaDRgclxILjJlMmhCRVBNaFJ0O28kO3RmYmErZzcyNnRDa0ZEJi9kJDc5KHVXcGxFIl9DaiM5XlRrb11VQlteVyokKDhJbUxPYWs3TjZWZDloQGA2M18pIkpPTCxLZGlnS1VTVj1LRVNiYjIrM1VbQSlaYWVeZlMyXWZKSldZT2ZBWGJobXJFPj5PRllQPjpNQ21ZZmI9ImRyaiRmR1dKbEZgVlMnWy9vJG5dPms6aixXMTw4bzQ+TU8pTTNMWFhIUFdQNiJXLWZDWTBhVUEnRCZYTnI9TiYyb0xfNiNKbU5aVVQ6RUlnY0hxTV9OKFMuOyxBKUhUIVZOZV1gUE04UVo/LTAqPTQoO1cxNz0hInQ9dCRZRFstbyFJQyUkb1gvSTUrXiYnPXM0XStkZlR0cCU2WXIidDdTKSpnTW8jNDdHOUIpYT9CbGgiZXNXSUNdZSVtLj1sTSdNSis8cksnbW9nL2dWLFlXKjFZYEk/Xj5qMWNpV2BWTE5qOz9uLnI6OzMlM1JCI2BhI3VwKSpJJDNRJWIzQHM+Sz8/YGUtWVEkJWo8NTwzVFlNWyJGPUBBKVNNJFxFa2Q6LDR1X2cpZCsxbldhcTwtQC5KNlc5RGRtTDg/PUItVDV0XHJVNVlabUhTO0RDYkBWaFlJWj1OXSFSSDFlZ1w4ZjMnWWtPSEZSPlQpcmw+YDVYLlBlRSxCXidMQCpcLDdvcyprQiFrZkNDVSxRPj9QYkBOTlArPzktQltPOSlAQlozWl0vMW1ublJhVi9ST3NdO1BubURDIXViP1IoYitxVjItMTZOZWRTLmosXyoxMUdhNDFETVBFWFFsczhfL2wyU0FHL20pb2pQO2BzPkIrZUBCVScpQFhlNTNYQV1fY0BkNUxzJ3A9W0BaJmxTR0JCa2MxK2QmK25GPEYyZk44XCZSZ2xBIzVkJThabEI7MFFBUUxlWmZCbmAobUFIKWNhXDs+ODYhRjdpVjRWcEdeMjlnSkg/UD9TVFpvRDdkaCk7PVc1XjBTQjxNQC0yWWg9NVlFWnNiKmtkIz9cYFAnZiU8J108QzUxdCUqJGROQC9mOktZU2owK2tQM20rTEE+Qyl0UU1ZcmhDV01JTzhocjM7RnFjU2QoOz1OMjpZaXMtRTRfciFAI2JmLCE1ZyRwYk80LW88Wk1lWi9QWl8mTzAhZS5caGZOMENjblVuZUY1UE5MTWBnLXVRODohWkouJGowL2wxKSZCXTMxMUJMOExYQj1LTWFsPiYjaF1FVmw9VGQ9OGZGIys7L0k5ZDpOV3AoI2tDSm8obnFgIkdHKiZHRFRrKz5dYTs1RyNoTEQ6YEQ7cFkrI0wmdT8taG1tQVVuNykkKWJrWG1cXmdkRW4+UV82SzRbUVtmIVhmVjI8KDxiRE5IMHRVXjQ3U2QzXi07MkZlYWpFRUsqQWZGXEdJaVZdWSpXT0Q+LjsyPm4hPUhsaVc/K18lVyt1LTxWVC1cMTNpLkxUPGxXJXBrPiRuMDZPRF1Lcy9iXyMiW29rQyY/KmUhdCQtN2wkKiE9PjY6N2h1dVtQY2NbTyVKdWYuJUNcUWNTYDlTUTgwSlA+U1VnPEpFbTghUlFsaWJNMUE+dE5tJ0REQXMzUiVSZCh1XS0wJlUiQWIvazMjQnMrJmopJnUhbEs+ME9ZMTJZK1wtXmIjNnQwR0AuPVVraU9fYWMnclAsNC5cVTBhazo7PVg3ZU9pakpbPG1fbj8kYlFNU0gtKmRYK1RPKFhbcU4zRzlUIys1THAtQ3Q1KGQlVUBMZi5AYVNbO2FzUyozZEtFUVdQVl9MM1ljN2tfcGJJWlxGY0EkPFAhXylpNHQkW3I8WCxjV18jbk5maEgwXUFhTCooXjNcPzVESzlBRjRmWEcoOFxHPTwzIWM5WWdPTkM6WENPZm0hRWluXVdgRlpgQkVkJmYmPF1RcEJBPCpTX0A4LmlPSVpNVjQvUicvYnF0aS48S1soV2osJSVHRyJkSmUmSDhoVWAjby9MXTQzUCJATEQnTkdqRDc/RGNYSmgwLydhXWRvQEZxPEQoXUZLTmdBJSU6O0NUbFZYPTNbPT5FZTB0PFkpWWdIbDRmNCYqOjRNZDRMYzU4JW4+WEBjLlJlXEM9aTZzYStyJiJZLiI0SDcrXShmMDN1SkwmdU8kUGpgWDpmYSJnNGJCKDgycEFXL1EhJDZlQ0BELnQ7XiFpPiteOSNbRGhPUHJeKi43Z29AbG8/XmxAK15kW2YtRSpnOjFBUlAiUiFGIXJfcFopPG4jQG1nYi9sRm0kU2s/YT5KLEhEbiNPS1ppNl8lSiZ1PVpFZURZMDR0U180VkJYWm8tYVYmNm5wLD1ALGpoZGFGRTJLTDA3IyZtLkwwTSo9PHJOaTNERVwjQ1BGIVw/LVNibUsjKzpePChbX28kMyhRVnIlRSknYS0/SEJecUJlK0RFbVZCKFxvMCtyTEZmMys4XT1cZGVjNmlLJDhLfj5lbmRzdHJlYW0KZW5kb2JqCnhyZWYKMCA5CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDA2MSAwMDAwMCBuIAowMDAwMDAwMTAyIDAwMDAwIG4gCjAwMDAwMDAyMDkgMDAwMDAgbiAKMDAwMDAwMDMyMSAwMDAwMCBuIAowMDAwMDAwNTI0IDAwMDAwIG4gCjAwMDAwMDA1OTIgMDAwMDAgbiAKMDAwMDAwMDg1MyAwMDAwMCBuIAowMDAwMDAwOTEyIDAwMDAwIG4gCnRyYWlsZXIKPDwKL0lEIApbPDhjMWQ5MGE5NDI5NzgxZDhlZmM1NzRkZGNjMmM2NDhlPjw4YzFkOTBhOTQyOTc4MWQ4ZWZjNTc0ZGRjYzJjNjQ4ZT5dCiUgUmVwb3J0TGFiIGdlbmVyYXRlZCBQREYgZG9jdW1lbnQgLS0gZGlnZXN0IChvcGVuc291cmNlKQoKL0luZm8gNiAwIFIKL1Jvb3QgNSAwIFIKL1NpemUgOQo+PgpzdGFydHhyZWYKNDM4NAolJUVPRgo=" class="btn btn-primary" download>↓ Télécharger CV</a>
+        </div>
+
+        <div class="doc-card">
+          <div class="doc-icon">✉</div>
+          <h3>Lettre de Motivation</h3>
+          <p>Ma lettre de motivation disponible en téléchargement ou à consulter directement.</p>
+          <!-- 👇 REMPLACE "lettre.pdf" PAR LE NOM DE TON FICHIER LETTRE dans le même dossier -->
+          <a href="lettre.pdf" class="btn btn-ghost" download>↓ Télécharger Lettre</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== À PROPOS ===== -->
+  <section id="about">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2>À propos</h2>
+        <div class="section-line"></div>
+      </div>
+
+      <div class="about-grid">
+        <div class="about-text">
+          <!-- 👇 REMPLACE PAR TA PRÉSENTATION -->
+          <p>
+            <strong>Bonjour !</strong> Je m'appelle MARIE-JOSEPH Stéddy j'ai 19 ans actuellement en BTS SIO en 2ième année en SLAM.
+          </p>
+          <p>
+            J'ai eu l'occasion de travailler sur la : conception et développement d'applications qui consiste à créer des solutions applicatives, à utiliser des langages de programmation et à gérer des bases de données, puis la cybersécurité qui à se familiarisent avec les enjeux de sécurité des systèmes informatiques et apprennent à protéger les données et la gestion de projets qui nous apprend à conduire des projets informatiques, de l'analyse des besoins à la livraison finale. 
+          <p>
+            En dehors du code, je m'intéresse à [tes centres d'intérêt]. Toujours à la recherche de nouveaux projets stimulants !
+          </p>
+        </div>
+
+        <div class="skills-list">
+          <h3>// Compétences</h3>
+          <!-- 👇 REMPLACE PAR TES COMPÉTENCES RÉELLES et ajuste les % -->
+          <div class="skill-item">
+            <span>JavaScript</span>
+            <div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div>
+          </div>
+          <div class="skill-item">
+            <span>React</span>
+            <div class="skill-bar"><div class="skill-fill" style="width:75%"></div></div>
+          </div>
+          <div class="skill-item">
+            <span>Python</span>
+            <div class="skill-bar"><div class="skill-fill" style="width:70%"></div></div>
+          </div>
+          <div class="skill-item">
+            <span>Node.js</span>
+            <div class="skill-bar"><div class="skill-fill" style="width:65%"></div></div>
+          </div>
+          <div class="skill-item">
+            <span>HTML/CSS</span>
+            <div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div>
+          </div>
+          <div class="skill-item">
+            <span>Git</span>
+            <div class="skill-bar"><div class="skill-fill" style="width:80%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== VEILLE INFORMATIQUE ===== -->
+  <section id="veille">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2>Veille informatique</h2>
+        <div class="section-line"></div>
+      </div>
+
+      <div class="veille-header-row">
+        <div class="veille-filters">
+          <button class="filter-btn active" data-cat="all">Tout</button>
+          <button class="filter-btn" data-cat="IA">IA</button>
+          <button class="filter-btn" data-cat="Web">Web</button>
+          <button class="filter-btn" data-cat="Sécurité">Sécurité</button>
+          <button class="filter-btn" data-cat="DevOps">DevOps</button>
+          <button class="filter-btn" data-cat="Data">Data</button>
+        </div>
+        <div class="veille-status">
+          <div class="status-dot"></div>
+          <span id="veille-last-update">Chargement...</span>
+        </div>
+      </div>
+
+      <div class="veille-grid" id="veille-grid">
+        <div class="veille-loading">
+          <div class="spinner"></div>
+          Récupération des dernières actus...
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer id="contact">
+    <div class="container">
+      <!-- 👇 REMPLACE PAR TON NOM -->
+      <p>© 2025 stéddy MARIE-JOSEPH — Fait avec du HTML brut</p>
+    </div>
+  </footer>
+
+  <script>
+  // =============================================
+  // VEILLE INFORMATIQUE — Rotation 24h sans API
+  // Les articles changent chaque jour automatiquement
+  // =============================================
+
+  let allArticles = [];
+  let activeFilter = 'all';
+
+  const catClass = {
+    'IA': 'cat-ia', 'Web': 'cat-web',
+    'Sécurité': 'cat-secu', 'DevOps': 'cat-devops', 'Data': 'cat-data'
+  };
+
+  // ---- Générateur pseudo-aléatoire basé sur la date (seed) ----
+  // Même date = mêmes articles. Jour suivant = articles différents.
+  function seededRandom(seed) {
+    let s = seed;
+    return function() {
+      s = (s * 1664525 + 1013904223) & 0xffffffff;
+      return (s >>> 0) / 0xffffffff;
+    };
+  }
+
+  function getDaySeed() {
+    const d = new Date();
+    return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+  }
+
+  function shuffle(arr, rng) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // ---- Base d'articles (grand pool, rotation quotidienne) ----
+  const POOL = [
+    // IA
+    { title: "GPT-5 dévoile des capacités de raisonnement inédites", summary: "OpenAI franchit une nouvelle étape avec un modèle capable de résoudre des problèmes mathématiques de niveau olympique sans assistance externe.", category: "IA", source: "The Verge", url: "https://theverge.com" },
+    { title: "Google DeepMind présente Gemini Ultra 2.0", summary: "Le nouveau modèle multimodal de Google surpasse ses concurrents sur les benchmarks de vision et de compréhension du langage naturel.", category: "IA", source: "Wired", url: "https://wired.com" },
+    { title: "Les LLM open-source rattrapent les modèles propriétaires", summary: "Llama 4 et Mistral Large s'imposent comme de vraies alternatives à GPT-4 sur la majorité des tâches de production.", category: "IA", source: "Hacker News", url: "https://news.ycombinator.com" },
+    { title: "L'IA générative s'invite dans les IDE en 2025", summary: "GitHub Copilot, Cursor et Windsurf transforment radicalement la façon dont les développeurs écrivent du code au quotidien.", category: "IA", source: "01net", url: "https://01net.com" },
+    { title: "Anthropic lève 4 milliards supplémentaires pour Claude", summary: "Le laboratoire mise sur la sécurité de l'IA tout en accélérant le déploiement de ses modèles dans le cloud d'entreprise.", category: "IA", source: "TechCrunch", url: "https://techcrunch.com" },
+    { title: "Les agents IA autonomes débarquent en production", summary: "Des startups lancent des agents capables d'exécuter des tâches complexes sans intervention humaine, soulevant des questions d'auditabilité.", category: "IA", source: "MIT Technology Review", url: "https://technologyreview.com" },
+    { title: "RAG vs Fine-tuning : le débat qui agite les MLOps", summary: "La communauté ML tranche : le retrieval-augmented generation s'impose pour la plupart des cas d'usage d'entreprise en 2025.", category: "IA", source: "Towards Data Science", url: "https://towardsdatascience.com" },
+    { title: "L'IA de Meta détecte les deepfakes avec 94% de précision", summary: "Un nouveau modèle de détection open-source est intégré directement dans Facebook et Instagram pour lutter contre la désinformation.", category: "IA", source: "Le Monde Informatique", url: "https://lemondeinformatique.fr" },
+    { title: "Stable Diffusion 4 repousse les limites de la génération d'images", summary: "Stability AI publie un modèle capable de générer des images 8K cohérentes avec un contrôle stylistique granulaire.", category: "IA", source: "Ars Technica", url: "https://arstechnica.com" },
+
+    // Web
+    { title: "React 20 mise sur la compilation statique par défaut", summary: "La prochaine version majeure de React abandonne le VDOM au profit d'une compilation à la Svelte pour des performances accrues.", category: "Web", source: "CSS-Tricks", url: "https://css-tricks.com" },
+    { title: "Bun 2.0 s'impose face à Node.js en production", summary: "Le runtime JavaScript ultra-rapide gagne du terrain avec un support natif de TypeScript et une compatibilité npm étendue.", category: "Web", source: "Hacker News", url: "https://news.ycombinator.com" },
+    { title: "WebAssembly WASI 2.0 : le web devient universel", summary: "Le nouveau standard WASI permet d'exécuter du code compilé natif dans le navigateur avec des performances quasi-natives.", category: "Web", source: "Mozilla Hacks", url: "https://hacks.mozilla.org" },
+    { title: "Tailwind CSS v4 : tout en CSS natif", summary: "La nouvelle version abandonne PostCSS et adopte les variables CSS natives pour une expérience de développement unifiée.", category: "Web", source: "Smashing Magazine", url: "https://smashingmagazine.com" },
+    { title: "Next.js 15 : le Server Components devient la norme", summary: "Vercel formalise l'architecture RSC comme standard de facto pour les applications React full-stack en 2025.", category: "Web", source: "Vercel Blog", url: "https://vercel.com/blog" },
+    { title: "HTTP/3 enfin majoritaire sur le web mondial", summary: "Plus de 52% du trafic web utilise désormais QUIC/HTTP3, réduisant la latence de 30% sur les connexions mobiles instables.", category: "Web", source: "W3Techs", url: "https://w3techs.com" },
+
+    // Sécurité
+    { title: "Faille critique dans OpenSSL 3.x : patch d'urgence", summary: "Une vulnérabilité de type buffer overflow expose des millions de serveurs Linux. La mise à jour 3.2.1 est à déployer immédiatement.", category: "Sécurité", source: "CERT-FR", url: "https://cert.ssi.gouv.fr" },
+    { title: "Ransomware-as-a-Service : LockBit 4.0 refait surface", summary: "Malgré le démantèlement en 2024, le groupe cybercriminel renaît avec une infrastructure décentralisée et des affiliés actifs.", category: "Sécurité", source: "Bleeping Computer", url: "https://bleepingcomputer.com" },
+    { title: "L'authentification passkey dépasse le mot de passe", summary: "Apple, Google et Microsoft reportent l'adoption massive des passkeys : 40% des connexions utilisent désormais ce standard FIDO2.", category: "Sécurité", source: "Krebs on Security", url: "https://krebsonsecurity.com" },
+    { title: "Zero Trust : 60% des grandes entreprises l'ont adopté", summary: "Le modèle de sécurité périmétrique est officiellement dépassé. Les architectures Zero Trust s'imposent comme le nouveau standard.", category: "Sécurité", source: "LeMagIT", url: "https://lemagit.fr" },
+    { title: "Supply chain attack vise les packages npm populaires", summary: "Des chercheurs détectent une campagne d'injection de code malveillant ciblant des bibliothèques npm avec plus de 10M de téléchargements.", category: "Sécurité", source: "Snyk Blog", url: "https://snyk.io/blog" },
+    { title: "La cryptographie post-quantique entre en vigueur", summary: "Le NIST finalise les standards CRYSTALS-Kyber et CRYSTALS-Dilithium. Les entreprises ont 3 ans pour migrer leurs systèmes.", category: "Sécurité", source: "ANSSI", url: "https://anssi.fr" },
+
+    // DevOps
+    { title: "Kubernetes 1.32 simplifie enfin la gestion des secrets", summary: "La nouvelle version intègre un gestionnaire de secrets natif, réduisant la dépendance à Vault ou AWS Secrets Manager.", category: "DevOps", source: "The New Stack", url: "https://thenewstack.io" },
+    { title: "GitHub Actions vs GitLab CI : comparatif 2025", summary: "Les deux plateformes se livrent une bataille sur les runners auto-hébergés et la vitesse d'exécution des pipelines complexes.", category: "DevOps", source: "Dev.to", url: "https://dev.to" },
+    { title: "Platform Engineering s'impose comme discipline à part entière", summary: "Les IDP (Internal Developer Platforms) deviennent incontournables pour réduire la charge cognitive des équipes de développement.", category: "DevOps", source: "InfoQ", url: "https://infoq.com" },
+    { title: "Terraform vs OpenTofu : la communauté tranche", summary: "Un an après le fork open-source, OpenTofu capte 35% de la communauté Terraform avec des fonctionnalités inédites.", category: "DevOps", source: "HashiCorp Blog", url: "https://hashicorp.com/blog" },
+
+    // Data
+    { title: "DuckDB s'impose comme le SQLite de l'analytique", summary: "La base de données OLAP embarquée atteint 10M de téléchargements mensuels et s'intègre nativement dans Python, R et Node.js.", category: "Data", source: "Towards Data Science", url: "https://towardsdatascience.com" },
+    { title: "Apache Iceberg devient le standard du lakehouse", summary: "Snowflake, Databricks et AWS convergent sur le format Iceberg pour l'interopérabilité des data lakes d'entreprise.", category: "Data", source: "Data Engineering Weekly", url: "https://dataengineeringweekly.com" },
+    { title: "Le Data Mesh tient-il ses promesses en 2025 ?", summary: "Bilan mitigé pour l'architecture décentralisée : les gains de gouvernance sont réels mais la complexité organisationnelle reste un frein.", category: "Data", source: "LeMondeInformatique", url: "https://lemondeinformatique.fr" },
+    { title: "Polars remplace Pandas dans les pipelines haute performance", summary: "Le DataFrame Rust-based offre des performances 10x supérieures sur les gros volumes et une API plus cohérente pour les équipes data.", category: "Data", source: "Python Weekly", url: "https://pythonweekly.com" },
+  ];
+
+  // ---- Sélection quotidienne : 9 articles différents chaque jour ----
+  function getDailyArticles() {
+    const rng = seededRandom(getDaySeed());
+    const shuffled = shuffle(POOL, rng);
+
+    // Assure la représentation de chaque catégorie
+    const byCategory = { IA: [], Web: [], Sécurité: [], DevOps: [], Data: [] };
+    shuffled.forEach(a => byCategory[a.category]?.push(a));
+
+    const selected = [
+      ...byCategory['IA'].slice(0, 3),
+      ...byCategory['Web'].slice(0, 2),
+      ...byCategory['Sécurité'].slice(0, 2),
+      ...byCategory['DevOps'].slice(0, 1),
+      ...byCategory['Data'].slice(0, 1),
+    ];
+
+    const today = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+    return shuffle(selected.map(a => ({ ...a, date: today })), seededRandom(getDaySeed() + 1));
+  }
+
+  // ---- Rendu d'une carte ----
+  function renderCard(a) {
+    const cls = catClass[a.category] || 'cat-ia';
+    return `
+      <a class="veille-card" href="${a.url}" target="_blank" rel="noopener" data-cat="${a.category}">
+        <div class="veille-card-top">
+          <span class="veille-source">${a.source}</span>
+          <span class="veille-cat ${cls}">${a.category}</span>
+        </div>
+        <h4>${a.title}</h4>
+        <p>${a.summary}</p>
+        <div class="veille-card-footer">
+          <span class="veille-date">${a.date}</span>
+          <span class="veille-arrow">↗</span>
+        </div>
+      </a>`;
+  }
+
+  // ---- Affiche selon filtre ----
+  function displayArticles(articles) {
+    const grid = document.getElementById('veille-grid');
+    const filtered = activeFilter === 'all'
+      ? articles
+      : articles.filter(a => a.category === activeFilter);
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div class="veille-loading">Aucun article dans cette catégorie.</div>`;
+    } else {
+      grid.innerHTML = filtered.map(renderCard).join('');
+    }
+  }
+
+  // ---- Filtres ----
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeFilter = btn.dataset.cat;
+      displayArticles(allArticles);
+    });
+  });
+
+  // ---- Lancement ----
+  allArticles = getDailyArticles();
+  displayArticles(allArticles);
+  const today = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+  document.getElementById('veille-last-update').textContent = `Mis à jour le ${today}`;
+  </script>
+</body>
+</html>
