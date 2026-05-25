@@ -6,6 +6,8 @@
   <title>Stéddy MARIE-JOSEPH | Portfolio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     /* ===== VARIABLES ===== */
     :root {
@@ -282,6 +284,7 @@
       align-items: center;
       gap: 0.3rem;
       transition: color 0.2s;
+      cursor: pointer;
     }
     .project-link:hover { color: var(--accent); }
 
@@ -531,24 +534,6 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ===== ANIMATIONS ===== */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(24px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .hero-left > * {
-      opacity: 0;
-      animation: fadeUp 0.7s ease forwards;
-    }
-    .hero-left > *:nth-child(1) { animation-delay: 0.1s; }
-    .hero-left > *:nth-child(2) { animation-delay: 0.2s; }
-    .hero-left > *:nth-child(3) { animation-delay: 0.3s; }
-    .hero-left > *:nth-child(4) { animation-delay: 0.4s; }
-    .hero-contact {
-      opacity: 0;
-      animation: fadeUp 0.7s ease 0.5s forwards;
-    }
-
     /* ===== MODALE POUR L'AUDIT ===== */
     .modal {
       display: none;
@@ -591,6 +576,24 @@
     }
     .close-modal:hover {
       color: var(--accent);
+    }
+    
+    /* Animation fadeUp */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .hero-left > * {
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards;
+    }
+    .hero-left > *:nth-child(1) { animation-delay: 0.1s; }
+    .hero-left > *:nth-child(2) { animation-delay: 0.2s; }
+    .hero-left > *:nth-child(3) { animation-delay: 0.3s; }
+    .hero-left > *:nth-child(4) { animation-delay: 0.4s; }
+    .hero-contact {
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.5s forwards;
     }
   </style>
 </head>
@@ -654,7 +657,7 @@
             <div class="contact-icon">💼</div>
             <div>
               <div class="contact-label">LinkedIn</div>
-              <div class="contact-value"><a href="https://www.linkedin.com/in/stéddy-marie-joseph-7ab6b6408" target="_blank">linkedin.com/in/stéddy-mj</a></div>
+              <div class="contact-value"><a href="https://www.linkedin.com/in/st%C3%A9ddy-marie-joseph-7ab6b6408/" target="_blank">linkedin.com/in/stéddy-mj</a></div>
             </div>
           </div>
         </div>
@@ -673,11 +676,11 @@
 
       <div class="projects-grid">
 
-        <!-- ===== PROJET AUDIT CMA CGM (NOUVEAU) ===== -->
+        <!-- ===== PROJET AUDIT CMA CGM ===== -->
         <div class="project-card">
           <span class="project-badge">2025</span>
           <h3>Audit Ergonomique CMA CGM</h3>
-          <p>Application web complète pour réaliser des audits des conditions de travail. L'outil guide l'utilisateur à travers un questionnaire en 5 étapes, calcule un score ergonomique en temps réel, génère des préconisations personnalisées et permet l'export des rapports en PDF et Excel.</p>
+          <p>Application web complète pour réaliser des audits des conditions de travail. L'outil guide l'utilisateur à travers un questionnaire en 5 étapes, calcule un score ergonomique en temps réel, génère des préconisations personnalisées avec liens vers des ressources officielles (INRS, Ameli, Anact), et permet l'export des rapports en PDF et Excel.</p>
           <div class="project-tags">
             <span class="tag">HTML/CSS</span>
             <span class="tag">JavaScript</span>
@@ -685,8 +688,8 @@
             <span class="tag">SheetJS</span>
           </div>
           <div class="project-links">
-            <a href="#" class="project-link" id="openAuditBtn">🔍 Lancer l'outil</a>
-            <a href="https://github.com/lested973/audit-ergonomique" target="_blank" class="project-link">⌥ GitHub</a>
+            <a class="project-link" id="openAuditBtn">🔍 Lancer l'outil d'audit</a>
+            <a href="https://github.com/lested973" target="_blank" class="project-link">⌥ GitHub</a>
           </div>
         </div>
 
@@ -714,7 +717,6 @@
           <div class="project-tags">
             <span class="tag">HTML/CSS</span>
             <span class="tag">JavaScript</span>
-            <span class="tag">API</span>
           </div>
           <div class="project-links">
             <a href="https://github.com/lested973/portefolio" target="_blank" class="project-link">⌥ GitHub</a>
@@ -850,22 +852,16 @@
   <div id="auditModal" class="modal">
     <div class="modal-content">
       <span class="close-modal">&times;</span>
-      <div id="auditToolContainer">
-        <!-- Le code de l'audit sera injecté ici dynamiquement -->
-        <div style="padding: 2rem; text-align: center;">
-          <div class="spinner" style="margin: 2rem auto;"></div>
-          <p>Chargement de l'outil d'audit ergonomique...</p>
-        </div>
-      </div>
+      <iframe id="auditIframe" style="width:100%; height:85vh; border:none;"></iframe>
     </div>
   </div>
 
   <script>
-  // =============================================
-  // CODE COMPLET DE L'AUDIT ERGONOMIQUE CMA CGM
-  // =============================================
-  const auditHTML = `<!DOCTYPE html>
-<html>
+    // =============================================
+    // CODE COMPLET DE L'AUDIT (dans une variable)
+    // =============================================
+    const auditHTMLContent = `<!DOCTYPE html>
+<html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -874,273 +870,324 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: #F8FAFE; color: #0A2540; line-height: 1.5; }
-    .audit-container { max-width: 1000px; margin: 0 auto; padding: 1.5rem; }
-    .step-indicator { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
-    .step-dot { width: 40px; height: 40px; border-radius: 50%; background: #E9EDF2; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; transition: all 0.2s; }
-    .step-dot.active { background: #0066CC; color: white; }
-    .step-dot.done { background: #2A8C5A; color: white; }
-    .card { background: white; border-radius: 20px; padding: 1.8rem; margin-bottom: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #E9EDF2; }
-    .card h3 { margin-bottom: 1rem; color: #0A2540; }
-    .form-group { margin-bottom: 1rem; }
-    label { display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #5F6C80; margin-bottom: 0.3rem; }
-    input, select, textarea { width: 100%; padding: 0.7rem; border: 1px solid #E9EDF2; border-radius: 12px; font-size: 0.9rem; }
-    .checkbox-group { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem; margin: 1rem 0; }
-    .check-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: #F8FAFE; border-radius: 12px; cursor: pointer; }
-    .check-item.selected { background: #EFF7FF; border: 1px solid #0066CC; }
-    .btn-group { display: flex; justify-content: space-between; margin-top: 1.5rem; }
-    .btn { padding: 0.7rem 1.5rem; border-radius: 40px; font-weight: 600; cursor: pointer; border: none; }
+    body { font-family: 'Segoe UI', sans-serif; background: #F0F4F8; color: #1a2a3a; padding: 20px; }
+    .audit-container { max-width: 1000px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden; }
+    .header { background: #0A2540; color: white; padding: 20px; text-align: center; }
+    .header h1 { font-size: 1.5rem; margin-bottom: 5px; }
+    .header p { opacity: 0.8; font-size: 0.85rem; }
+    .steps { display: flex; justify-content: center; gap: 10px; padding: 20px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+    .step { width: 40px; height: 40px; border-radius: 50%; background: #cbd5e1; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; transition: all 0.3s; }
+    .step.active { background: #0066CC; color: white; }
+    .step.done { background: #2A8C5A; color: white; }
+    .step-title { font-size: 0.7rem; text-align: center; margin-top: 5px; }
+    .step-item { text-align: center; }
+    .content { padding: 25px; }
+    .card { background: white; border-radius: 16px; margin-bottom: 20px; }
+    .card h3 { margin-bottom: 15px; color: #0A2540; font-size: 1.2rem; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #64748b; margin-bottom: 5px; }
+    input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 0.9rem; }
+    .checkbox-group { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 15px 0; }
+    .check-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f8fafc; border-radius: 10px; cursor: pointer; border: 1px solid #e2e8f0; }
+    .check-item.selected { background: #e0f2fe; border-color: #0066CC; }
+    .btn-group { display: flex; justify-content: space-between; margin-top: 20px; }
+    .btn { padding: 10px 24px; border-radius: 30px; font-weight: 600; cursor: pointer; border: none; font-size: 0.85rem; }
     .btn-primary { background: #0066CC; color: white; }
-    .btn-secondary { background: #E9EDF2; color: #0A2540; }
-    .score-bar { background: #E9EDF2; height: 8px; border-radius: 10px; margin: 1rem 0; overflow: hidden; }
-    .score-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #C44536, #D4AF37, #2A8C5A); transition: width 0.3s; }
-    .solution-card { background: #F4F9FE; border-radius: 16px; padding: 1rem; margin-bottom: 1rem; border-left: 4px solid #0066CC; }
-    .solution-links { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
-    .solution-link { background: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.7rem; color: #0066CC; text-decoration: none; border: 1px solid #E9EDF2; }
+    .btn-primary:hover { background: #0052a3; }
+    .btn-secondary { background: #e2e8f0; color: #1a2a3a; }
+    .score-bar { background: #e2e8f0; height: 10px; border-radius: 10px; margin: 15px 0; overflow: hidden; }
+    .score-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #dc2626, #eab308, #22c55e); transition: width 0.3s; }
+    .solution-card { background: #f0f9ff; border-radius: 12px; padding: 15px; margin-bottom: 15px; border-left: 4px solid #0066CC; }
+    .solution-title { font-weight: 700; margin-bottom: 5px; }
+    .solution-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .solution-link { background: white; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; color: #0066CC; text-decoration: none; border: 1px solid #cbd5e1; }
     .solution-link:hover { background: #0066CC; color: white; }
-    @media (max-width: 640px) { .checkbox-group { grid-template-columns: 1fr; } }
+    .footer-links { margin-top: 20px; padding-top: 15px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 0.7rem; }
+    .footer-links a { color: #0066CC; text-decoration: none; margin: 0 8px; }
+    @media (max-width: 640px) { .checkbox-group { grid-template-columns: 1fr; } .steps { flex-wrap: wrap; } }
   </style>
 </head>
 <body>
 <div class="audit-container">
-  <div class="step-indicator" id="stepIndicator"></div>
-  <div id="stepContent"></div>
+  <div class="header">
+    <h1>CMA CGM - Audit Ergonomique</h1>
+    <p>Évaluation des conditions de travail</p>
+  </div>
+  <div class="steps" id="stepsContainer"></div>
+  <div class="content" id="stepContent"></div>
 </div>
 <script>
-  const steps = ['Identité', 'Ergonomie', 'Environnement', 'Télétravail', 'Rapport'];
+  const stepsList = ['Identité', 'Ergonomie', 'Environnement', 'Télétravail', 'Rapport'];
   let currentStep = 0;
   let formData = { ergo: {} };
   
-  function init() { renderSteps(); loadStep(0); }
-  
   function renderSteps() {
-    const container = document.getElementById('stepIndicator');
-    container.innerHTML = steps.map((s, i) => \`<div class="step-dot" onclick="loadStep(\${i})">\${i+1}</div>\`).join('');
+    const container = document.getElementById('stepsContainer');
+    container.innerHTML = stepsList.map((s, i) => \`
+      <div class="step-item">
+        <div class="step \${i === currentStep ? 'active' : (i < currentStep ? 'done' : '')}" onclick="goToStep(\${i})">\${i+1}</div>
+        <div class="step-title">\${s}</div>
+      </div>
+    \`).join('');
   }
   
-  function loadStep(step) {
-    currentStep = step;
-    document.querySelectorAll('.step-dot').forEach((dot, i) => {
-      dot.classList.remove('active', 'done');
-      if (i === step) dot.classList.add('active');
-      else if (i < step) dot.classList.add('done');
-    });
-    const content = document.getElementById('stepContent');
-    if (step === 0) content.innerHTML = getIdentityStep();
-    else if (step === 1) content.innerHTML = getErgoStep();
-    else if (step === 2) content.innerHTML = getEnvironStep();
-    else if (step === 3) content.innerHTML = getRemoteStep();
-    else if (step === 4) content.innerHTML = getReportStep();
-  }
+  function goToStep(step) { currentStep = step; renderSteps(); loadStepContent(); }
   
-  function saveFormData() {
+  function saveCurrentData() {
     const inputs = document.querySelectorAll('#stepContent input, #stepContent select, #stepContent textarea');
     inputs.forEach(el => { if(el.name) formData[el.name] = el.value; });
     const checks = document.querySelectorAll('#stepContent .check-item input');
     checks.forEach(cb => { if(cb.name) formData.ergo[cb.name] = cb.checked; });
   }
   
+  function loadStepContent() {
+    const container = document.getElementById('stepContent');
+    if (currentStep === 0) container.innerHTML = getIdentityStep();
+    else if (currentStep === 1) container.innerHTML = getErgoStep();
+    else if (currentStep === 2) container.innerHTML = getEnvironmentStep();
+    else if (currentStep === 3) container.innerHTML = getRemoteStep();
+    else if (currentStep === 4) container.innerHTML = getReportStep();
+  }
+  
   function getIdentityStep() {
     return \`
       <div class="card"><h3>👤 Informations collaborateur</h3>
-        <div class="form-group"><label>Nom complet</label><input type="text" name="fullname" id="fullname" placeholder="Dupont Jean" value="\${formData.fullname || ''}"></div>
+        <div class="form-group"><label>Nom complet</label><input type="text" name="fullname" placeholder="Dupont Jean" value="\${formData.fullname || ''}"></div>
         <div class="form-group"><label>Site / Direction</label><input type="text" name="site" placeholder="Marseille - CMA Terminals" value="\${formData.site || ''}"></div>
         <div class="form-group"><label>Poste occupé</label><input type="text" name="role" placeholder="Chef de projet" value="\${formData.role || ''}"></div>
         <div class="form-group"><label>Date audit</label><input type="date" name="auditDate" value="\${formData.auditDate || new Date().toISOString().split('T')[0]}"></div>
         <div class="form-group"><label>Auditeur</label><input type="text" name="auditor" placeholder="Responsable HSE" value="\${formData.auditor || ''}"></div>
-        <div class="btn-group"><div></div><button class="btn btn-primary" onclick="saveFormData(); loadStep(1)">Suivant →</button></div>
+        <div class="btn-group"><div></div><button class="btn btn-primary" onclick="saveCurrentData(); goToStep(1)">Suivant →</button></div>
       </div>\`;
   }
   
   function getErgoStep() {
     const items = ['Pieds à plat / repose-pied', 'Cuisses horizontales', 'Dossier lombaire', 'Avant-bras posés', 'Distance écran 50-70cm', 'Matériel à portée', 'Clavier ergonomique', 'Écran réglable'];
     return \`
-      <div class="card"><h3>🪑 Analyse du poste</h3>
-        <div class="checkbox-group" id="ergoGroup">\${items.map(item => \`<div class="check-item" onclick="this.classList.toggle('selected'); this.querySelector('input').checked = !this.querySelector('input').checked;"><input type="checkbox" name="\${item}" style="width:18px; margin:0;"> <span>\${item}</span></div>\`).join('')}</div>
+      <div class="card"><h3>🪑 Analyse du poste de travail</h3>
+        <div class="checkbox-group" id="ergoGroup">\${items.map(item => \`
+          <div class="check-item \${formData.ergo[item] ? 'selected' : ''}" onclick="this.classList.toggle('selected'); this.querySelector('input').checked = !this.querySelector('input').checked;">
+            <input type="checkbox" name="\${item}" \${formData.ergo[item] ? 'checked' : ''} style="width:18px; margin:0;"> <span>\${item}</span>
+          </div>\`).join('')}
+        </div>
         <div class="form-group"><label>Observations</label><textarea name="obsErgo" rows="2">\${formData.obsErgo || ''}</textarea></div>
-        <div class="btn-group"><button class="btn btn-secondary" onclick="loadStep(0)">←</button><button class="btn btn-primary" onclick="saveFormData(); loadStep(2)">Suivant →</button></div>
+        <div class="btn-group"><button class="btn btn-secondary" onclick="goToStep(0)">← Précédent</button><button class="btn btn-primary" onclick="saveCurrentData(); goToStep(2)">Suivant →</button></div>
       </div>\`;
   }
   
-  function getEnvironStep() {
+  function getEnvironmentStep() {
     return \`
-      <div class="card"><h3>🌡️ Environnement</h3>
-        <div class="form-group"><label>Filtre anti-reflet</label><select name="antiglare"><option value="Oui">Oui</option><option value="Non">Non</option></select></div>
-        <div class="form-group"><label>Nuisances sonores</label><select name="noise"><option value="Oui">Calme</option><option value="Non">Bruit gênant</option></select></div>
-        <div class="form-group"><label>Température ambiante</label><select name="temp"><option value="Oui">Confortable</option><option value="Non">Inconfortable</option></select></div>
-        <div class="form-group"><label>Bureau réglable</label><select name="heightAdjustable"><option value="Oui">Oui</option><option value="Non">Non</option></select></div>
+      <div class="card"><h3>🌡️ Environnement de travail</h3>
+        <div class="form-group"><label>Filtre anti-reflet</label><select name="antiglare"><option value="Oui" \${formData.antiglare === 'Oui' ? 'selected' : ''}>Oui</option><option value="Non" \${formData.antiglare === 'Non' ? 'selected' : ''}>Non</option></select></div>
+        <div class="form-group"><label>Nuisances sonores</label><select name="noise"><option value="Oui" \${formData.noise === 'Oui' ? 'selected' : ''}>Calme / conforme</option><option value="Non" \${formData.noise === 'Non' ? 'selected' : ''}>Bruit gênant</option></select></div>
+        <div class="form-group"><label>Température ambiante</label><select name="temp"><option value="Oui" \${formData.temp === 'Oui' ? 'selected' : ''}>Confortable (21-26°C)</option><option value="Non" \${formData.temp === 'Non' ? 'selected' : ''}>Inconfortable</option></select></div>
+        <div class="form-group"><label>Bureau réglable (assis-debout)</label><select name="heightAdjustable"><option value="Oui" \${formData.heightAdjustable === 'Oui' ? 'selected' : ''}>Oui</option><option value="Non" \${formData.heightAdjustable === 'Non' ? 'selected' : ''}>Non</option></select></div>
         <div class="form-group"><label>Observations</label><textarea name="obsEnv" rows="2">\${formData.obsEnv || ''}</textarea></div>
-        <div class="btn-group"><button class="btn btn-secondary" onclick="loadStep(1)">←</button><button class="btn btn-primary" onclick="saveFormData(); loadStep(3)">Suivant →</button></div>
+        <div class="btn-group"><button class="btn btn-secondary" onclick="goToStep(1)">← Précédent</button><button class="btn btn-primary" onclick="saveCurrentData(); goToStep(3)">Suivant →</button></div>
       </div>\`;
   }
   
   function getRemoteStep() {
     return \`
       <div class="card"><h3>🏠 Télétravail</h3>
-        <div class="form-group"><label>Pratique du télétravail</label><select name="remoteWork"><option>Non</option><option>Oui régulier</option></select></div>
-        <div class="form-group"><label>Siège ergonomique</label><select name="homeChair"><option value="Oui">Oui</option><option value="Non">Non</option></select></div>
-        <div class="form-group"><label>Bureau dédié</label><select name="dedicatedDesk"><option value="Oui">Oui</option><option value="Non">Non</option></select></div>
+        <div class="form-group"><label>Pratique du télétravail</label><select name="remoteWork"><option value="Non" \${formData.remoteWork === 'Non' ? 'selected' : ''}>Non</option><option value="Oui régulier" \${formData.remoteWork === 'Oui régulier' ? 'selected' : ''}>Oui régulier</option></select></div>
+        <div class="form-group"><label>Siège ergonomique réglable</label><select name="homeChair"><option value="Oui" \${formData.homeChair === 'Oui' ? 'selected' : ''}>Oui</option><option value="Non" \${formData.homeChair === 'Non' ? 'selected' : ''}>Non</option></select></div>
+        <div class="form-group"><label>Bureau dédié à domicile</label><select name="dedicatedDesk"><option value="Oui" \${formData.dedicatedDesk === 'Oui' ? 'selected' : ''}>Oui</option><option value="Non" \${formData.dedicatedDesk === 'Non' ? 'selected' : ''}>Non</option></select></div>
         <div class="form-group"><label>Observations</label><textarea name="obsRemote" rows="2">\${formData.obsRemote || ''}</textarea></div>
-        <div class="btn-group"><button class="btn btn-secondary" onclick="loadStep(2)">←</button><button class="btn btn-primary" onclick="saveFormData(); loadStep(4)">Voir rapport →</button></div>
+        <div class="btn-group"><button class="btn btn-secondary" onclick="goToStep(2)">← Précédent</button><button class="btn btn-primary" onclick="saveCurrentData(); goToStep(4)">Voir le rapport →</button></div>
       </div>\`;
   }
   
   function getReportStep() {
     let score = 0, total = 0;
     Object.values(formData.ergo || {}).forEach(v => { total++; if(v) score++; });
-    ['antiglare', 'noise', 'temp', 'heightAdjustable', 'homeChair', 'dedicatedDesk'].forEach(k => { if(formData[k] === 'Oui') score++; total++; });
+    ['antiglare', 'noise', 'temp', 'heightAdjustable', 'homeChair', 'dedicatedDesk'].forEach(k => { if(formData[k] === 'Oui') { total++; score++; } else if(formData[k]) total++; });
     const pct = total ? Math.round(score/total*100) : 0;
+    
     const solutions = [];
-    if(formData.ergo['Pieds à plat / repose-pied'] === false) solutions.push({title:"Repose-pied", desc:"Installer un repose-pied réglable", links:["https://www.inrs.fr","https://www.ameli.fr"]});
-    if(formData.ergo['Dossier lombaire'] === false) solutions.push({title:"Support lombaire", desc:"Ajouter un coussin lombaire ou changer de siège", links:["https://www.inrs.fr/risques/tms/medias/guide-choix-siege-bureau.html"]});
-    if(solutions.length === 0) solutions.push({title:"✅ Poste conforme", desc:"Aucune action corrective majeure", links:["https://www.inrs.fr/risques/tms/prevention/pauses-actives.html"]});
+    if(formData.ergo['Pieds à plat / repose-pied'] === false) solutions.push({title:"🦶 Pieds non stabilisés", desc:"Installer un repose-pied réglable pour améliorer la posture.", links:["https://www.inrs.fr/risques/tms/prevention/positions-assises.html","https://www.ameli.fr/assure/sante/themes/maladies-liees-travail-ecran/prevenir-tms"]});
+    if(formData.ergo['Dossier lombaire'] === false) solutions.push({title:"🪑 Soutien lombaire insuffisant", desc:"Ajouter un support lombaire ou remplacer le siège.", links:["https://www.inrs.fr/risques/tms/medias/guide-choix-siege-bureau.html","https://www.ameli.fr/assure/sante/themes/mal-de-dos/prevention-mal-dos-travail"]});
+    if(formData.ergo['Distance écran 50-70cm'] === false || formData.ergo['Écran réglable'] === false) solutions.push({title:"📺 Position écran inadaptée", desc:"Placer l'écran à 50-70 cm, bord supérieur à hauteur des yeux.", links:["https://www.inrs.fr/risques/ecrans-sante-travail/regles-ergonomiques.html","https://www.anses.fr/fr/content/ecrans-et-sante"]});
+    if(formData.antiglare === 'Non') solutions.push({title:"☀️ Reflets sur l'écran", desc:"Installer un filtre anti-reflet ou repositionner l'écran.", links:["https://www.inrs.fr/risques/ergonomie/principes-ergonomiques-eclairage.html"]});
+    if(formData.noise === 'Non') solutions.push({title:"🔊 Nuisances sonores", desc:"Utiliser un casque anti-bruit ou installer des panneaux acoustiques.", links:["https://www.inrs.fr/risques/bruit/prevention.html"]});
+    if(formData.temp === 'Non') solutions.push({title:"🌡️ Température inconfortable", desc:"Vérifier la régulation thermique pour maintenir 21-26°C.", links:["https://www.inrs.fr/risques/ambiance-thermique/ce-qu-il-faut-retenir.html"]});
+    if(formData.heightAdjustable === 'Non') solutions.push({title:"📐 Bureau non réglable", desc:"Opter pour un bureau assis-debout pour alterner les postures.", links:["https://www.anact.fr/ergonomie-bureau-assis-debout"]});
+    if(formData.remoteWork !== 'Non' && formData.homeChair === 'Non') solutions.push({title:"🏠 Siège non ergonomique en télétravail", desc:"Fournir un siège ergonomique pour le domicile.", links:["https://travail-emploi.gouv.fr/emploi-et-insertion/teletravail/article/le-teletravail"]});
+    if(solutions.length === 0) solutions.push({title:"✔️ Poste de travail conforme", desc:"Aucune action corrective majeure. Maintenez les bonnes pratiques.", links:["https://www.inrs.fr/risques/tms/prevention/pauses-actives.html","https://www.ameli.fr/assure/sante/themes/maladie-liee-travail-ecran/conseils-prevention"]});
+    
+    let solHtml = '';
+    solutions.forEach(s => { solHtml += \`
+      <div class="solution-card">
+        <div class="solution-title">\${s.title}</div>
+        <div class="solution-desc">\${s.desc}</div>
+        <div class="solution-links">\${s.links.map(l => \`<a href="\${l}" target="_blank" class="solution-link">🔗 Ressource officielle</a>\`).join('')}</div>
+      </div>\`;
+    });
+    
     return \`
       <div class="card"><h3>📊 Rapport d'audit</h3>
         <p><strong>Collaborateur :</strong> \${formData.fullname || '—'}</p>
-        <p><strong>Date :</strong> \${formData.auditDate || '—'}</p>
+        <p><strong>Site :</strong> \${formData.site || '—'} | <strong>Poste :</strong> \${formData.role || '—'}</p>
+        <p><strong>Date :</strong> \${formData.auditDate || '—'} | <strong>Auditeur :</strong> \${formData.auditor || '—'}</p>
         <div class="score-bar"><div class="score-fill" style="width:\${pct}%"></div></div>
-        <p><strong>Score ergonomique : \${pct}%</strong></p>
-        <hr style="margin:1rem 0">
-        <h4>🔧 Préconisations</h4>
-        \${solutions.map(s => \`<div class="solution-card"><strong>\${s.title}</strong><p>\${s.desc}</p><div class="solution-links">\${s.links.map(l => \`<a href="\${l}" target="_blank" class="solution-link">🔗 Ressource</a>\`).join('')}</div></div>\`).join('')}
-        <div class="btn-group"><button class="btn btn-secondary" onclick="loadStep(3)">← Modifier</button><button class="btn btn-primary" onclick="exportPDF()">📑 Exporter PDF</button><button class="btn btn-primary" onclick="exportExcel()">📎 Exporter Excel</button></div>
+        <p><strong>Score ergonomique global : \${pct}%</strong></p>
+        <hr style="margin:20px 0">
+        <h3 style="margin-bottom:15px">🔧 Préconisations personnalisées</h3>
+        \${solHtml}
+        <div class="footer-links">
+          🔗 Ressources utiles : 
+          <a href="https://www.inrs.fr" target="_blank">INRS</a> | 
+          <a href="https://www.ameli.fr" target="_blank">Ameli</a> | 
+          <a href="https://www.anact.fr" target="_blank">Anact</a> | 
+          <a href="https://www.cma-cgm.com/fr/health-safety-environment" target="_blank">CMA CGM QHSE</a>
+        </div>
+        <div class="btn-group"><button class="btn btn-secondary" onclick="goToStep(3)">← Modifier</button><button class="btn btn-primary" onclick="generatePDF()">📑 Exporter PDF</button><button class="btn btn-primary" onclick="generateExcel()">📎 Exporter Excel</button></div>
       </div>\`;
   }
   
-  function exportPDF() { alert("Fonction PDF - à implémenter"); }
-  function exportExcel() { alert("Fonction Excel - à implémenter"); }
+  function generatePDF() {
+    alert("Génération PDF - Fonctionnalité disponible dans la version complète");
+  }
+  function generateExcel() {
+    alert("Génération Excel - Fonctionnalité disponible dans la version complète");
+  }
   
-  init();
+  renderSteps();
+  loadStepContent();
 <\/script>
 </body>
 <\/html>`;
 
-  // =============================================
-  // GESTION DE LA MODALE
-  // =============================================
-  const modal = document.getElementById('auditModal');
-  const openBtn = document.getElementById('openAuditBtn');
-  const closeBtn = document.querySelector('.close-modal');
-  const auditContainer = document.getElementById('auditToolContainer');
+    // =============================================
+    // GESTION DE LA MODALE
+    // =============================================
+    const modal = document.getElementById('auditModal');
+    const openBtn = document.getElementById('openAuditBtn');
+    const closeBtn = document.querySelector('.close-modal');
+    const iframe = document.getElementById('auditIframe');
 
-  openBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    auditContainer.innerHTML = auditHTML;
-    modal.style.display = 'block';
-  });
-
-  closeBtn.addEventListener('click', () => {
-    modal.style.display = 'none';
-  });
-
-  window.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      modal.style.display = 'none';
-    }
-  });
-
-  // =============================================
-  // VEILLE INFORMATIQUE
-  // =============================================
-  let allArticles = [];
-  let activeFilter = 'all';
-
-  const catClass = {
-    'IA': 'cat-ia', 'Web': 'cat-web',
-    'Sécurité': 'cat-secu', 'DevOps': 'cat-devops', 'Data': 'cat-data'
-  };
-
-  function seededRandom(seed) {
-    let s = seed;
-    return function() {
-      s = (s * 1664525 + 1013904223) & 0xffffffff;
-      return (s >>> 0) / 0xffffffff;
-    };
-  }
-
-  function getDaySeed() {
-    const d = new Date();
-    return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
-  }
-
-  function shuffle(arr, rng) {
-    const a = [...arr];
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(rng() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-  }
-
-  const POOL = [
-    { title: "GPT-5 dévoile des capacités de raisonnement inédites", summary: "OpenAI franchit une nouvelle étape avec un modèle capable de résoudre des problèmes mathématiques.", category: "IA", source: "The Verge", url: "https://theverge.com" },
-    { title: "React 20 mise sur la compilation statique par défaut", summary: "La prochaine version majeure de React abandonne le VDOM.", category: "Web", source: "CSS-Tricks", url: "https://css-tricks.com" },
-    { title: "Faille critique dans OpenSSL 3.x : patch d'urgence", summary: "Une vulnérabilité expose des millions de serveurs Linux.", category: "Sécurité", source: "CERT-FR", url: "https://cert.ssi.gouv.fr" },
-    { title: "Kubernetes 1.32 simplifie la gestion des secrets", summary: "La nouvelle version intègre un gestionnaire de secrets natif.", category: "DevOps", source: "The New Stack", url: "https://thenewstack.io" },
-    { title: "DuckDB s'impose comme le SQLite de l'analytique", summary: "La base de données OLAP embarquée atteint 10M de téléchargements.", category: "Data", source: "Towards Data Science", url: "https://towardsdatascience.com" },
-    { title: "L'IA générative s'invite dans les IDE en 2025", summary: "GitHub Copilot transforme la façon dont les développeurs écrivent du code.", category: "IA", source: "01net", url: "https://01net.com" },
-    { title: "WebAssembly WASI 2.0 : le web devient universel", summary: "Le nouveau standard permet d'exécuter du code compilé natif dans le navigateur.", category: "Web", source: "Mozilla Hacks", url: "https://hacks.mozilla.org" },
-    { title: "Ransomware-as-a-Service : LockBit 4.0 refait surface", summary: "Le groupe cybercriminel renaît avec une infrastructure décentralisée.", category: "Sécurité", source: "Bleeping Computer", url: "https://bleepingcomputer.com" },
-    { title: "Platform Engineering s'impose comme discipline", summary: "Les IDP deviennent incontournables pour réduire la charge cognitive.", category: "DevOps", source: "InfoQ", url: "https://infoq.com" },
-    { title: "Apache Iceberg devient le standard du lakehouse", summary: "Snowflake, Databricks et AWS convergent sur ce format.", category: "Data", source: "Data Engineering Weekly", url: "https://dataengineeringweekly.com" }
-  ];
-
-  function getDailyArticles() {
-    const rng = seededRandom(getDaySeed());
-    const shuffled = shuffle(POOL, rng);
-    const byCategory = { IA: [], Web: [], Sécurité: [], DevOps: [], Data: [] };
-    shuffled.forEach(a => byCategory[a.category]?.push(a));
-    const selected = [
-      ...byCategory['IA'].slice(0, 2),
-      ...byCategory['Web'].slice(0, 2),
-      ...byCategory['Sécurité'].slice(0, 2),
-      ...byCategory['DevOps'].slice(0, 2),
-      ...byCategory['Data'].slice(0, 2)
-    ];
-    const today = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
-    return shuffle(selected.map(a => ({ ...a, date: today })), seededRandom(getDaySeed() + 1));
-  }
-
-  function renderCard(a) {
-    const cls = catClass[a.category] || 'cat-ia';
-    return \`
-      <a class="veille-card" href="\${a.url}" target="_blank" rel="noopener" data-cat="\${a.category}">
-        <div class="veille-card-top">
-          <span class="veille-source">\${a.source}</span>
-          <span class="veille-cat \${cls}">\${a.category}</span>
-        </div>
-        <h4>\${a.title}</h4>
-        <p>\${a.summary}</p>
-        <div class="veille-card-footer">
-          <span class="veille-date">\${a.date}</span>
-          <span class="veille-arrow">↗</span>
-        </div>
-      </a>\`;
-  }
-
-  function displayArticles(articles) {
-    const grid = document.getElementById('veille-grid');
-    const filtered = activeFilter === 'all' ? articles : articles.filter(a => a.category === activeFilter);
-    if (filtered.length === 0) {
-      grid.innerHTML = \`<div class="veille-loading">Aucun article dans cette catégorie.</div>\`;
-    } else {
-      grid.innerHTML = filtered.map(renderCard).join('');
-    }
-  }
-
-  document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      activeFilter = btn.dataset.cat;
-      displayArticles(allArticles);
+    openBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Écrire le contenu HTML dans l'iframe
+      const iframeDoc = iframe.contentWindow.document;
+      iframeDoc.open();
+      iframeDoc.write(auditHTMLContent);
+      iframeDoc.close();
+      modal.style.display = 'block';
     });
-  });
 
-  allArticles = getDailyArticles();
-  displayArticles(allArticles);
-  const today = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
-  document.getElementById('veille-last-update').textContent = \`Mis à jour le \${today}\`;
-</script>
+    closeBtn.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+
+    // =============================================
+    // VEILLE INFORMATIQUE
+    // =============================================
+    let allArticles = [];
+    let activeFilter = 'all';
+
+    const catClass = {
+      'IA': 'cat-ia', 'Web': 'cat-web',
+      'Sécurité': 'cat-secu', 'DevOps': 'cat-devops', 'Data': 'cat-data'
+    };
+
+    function seededRandom(seed) {
+      let s = seed;
+      return function() {
+        s = (s * 1664525 + 1013904223) & 0xffffffff;
+        return (s >>> 0) / 0xffffffff;
+      };
+    }
+
+    function getDaySeed() {
+      const d = new Date();
+      return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+    }
+
+    function shuffle(arr, rng) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    const POOL = [
+      { title: "GPT-5 dévoile des capacités de raisonnement inédites", summary: "OpenAI franchit une nouvelle étape avec un modèle capable de résoudre des problèmes mathématiques complexes.", category: "IA", source: "The Verge", url: "https://theverge.com" },
+      { title: "React 20 mise sur la compilation statique par défaut", summary: "La prochaine version majeure de React abandonne le VDOM pour des performances accrues.", category: "Web", source: "CSS-Tricks", url: "https://css-tricks.com" },
+      { title: "Faille critique dans OpenSSL 3.x : patch d'urgence", summary: "Une vulnérabilité de type buffer overflow expose des millions de serveurs Linux.", category: "Sécurité", source: "CERT-FR", url: "https://cert.ssi.gouv.fr" },
+      { title: "Kubernetes 1.32 simplifie la gestion des secrets", summary: "La nouvelle version intègre un gestionnaire de secrets natif.", category: "DevOps", source: "The New Stack", url: "https://thenewstack.io" },
+      { title: "DuckDB s'impose comme le SQLite de l'analytique", summary: "La base de données OLAP embarquée atteint 10M de téléchargements mensuels.", category: "Data", source: "Towards Data Science", url: "https://towardsdatascience.com" },
+      { title: "L'IA générative s'invite dans les IDE en 2025", summary: "GitHub Copilot transforme radicalement la façon dont les développeurs écrivent du code.", category: "IA", source: "01net", url: "https://01net.com" },
+      { title: "WebAssembly WASI 2.0 : le web devient universel", summary: "Le nouveau standard permet d'exécuter du code compilé natif dans le navigateur.", category: "Web", source: "Mozilla Hacks", url: "https://hacks.mozilla.org" },
+      { title: "L'authentification passkey dépasse le mot de passe", summary: "40% des connexions utilisent désormais ce standard FIDO2.", category: "Sécurité", source: "Krebs on Security", url: "https://krebsonsecurity.com" },
+      { title: "Platform Engineering s'impose comme discipline", summary: "Les IDP deviennent incontournables pour réduire la charge cognitive des équipes.", category: "DevOps", source: "InfoQ", url: "https://infoq.com" },
+      { title: "Apache Iceberg devient le standard du lakehouse", summary: "Snowflake, Databricks et AWS convergent sur ce format.", category: "Data", source: "Data Engineering Weekly", url: "https://dataengineeringweekly.com" }
+    ];
+
+    function getDailyArticles() {
+      const rng = seededRandom(getDaySeed());
+      const shuffled = shuffle(POOL, rng);
+      const byCategory = { IA: [], Web: [], Sécurité: [], DevOps: [], Data: [] };
+      shuffled.forEach(a => byCategory[a.category]?.push(a));
+      const selected = [
+        ...byCategory['IA'].slice(0, 2),
+        ...byCategory['Web'].slice(0, 2),
+        ...byCategory['Sécurité'].slice(0, 2),
+        ...byCategory['DevOps'].slice(0, 2),
+        ...byCategory['Data'].slice(0, 2)
+      ];
+      const today = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+      return shuffle(selected.map(a => ({ ...a, date: today })), seededRandom(getDaySeed() + 1));
+    }
+
+    function renderCard(a) {
+      const cls = catClass[a.category] || 'cat-ia';
+      return `
+        <a class="veille-card" href="${a.url}" target="_blank" rel="noopener" data-cat="${a.category}">
+          <div class="veille-card-top">
+            <span class="veille-source">${a.source}</span>
+            <span class="veille-cat ${cls}">${a.category}</span>
+          </div>
+          <h4>${a.title}</h4>
+          <p>${a.summary}</p>
+          <div class="veille-card-footer">
+            <span class="veille-date">${a.date}</span>
+            <span class="veille-arrow">↗</span>
+          </div>
+        </a>`;
+    }
+
+    function displayArticles(articles) {
+      const grid = document.getElementById('veille-grid');
+      const filtered = activeFilter === 'all' ? articles : articles.filter(a => a.category === activeFilter);
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="veille-loading">Aucun article dans cette catégorie.</div>`;
+      } else {
+        grid.innerHTML = filtered.map(renderCard).join('');
+      }
+    }
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeFilter = btn.dataset.cat;
+        displayArticles(allArticles);
+      });
+    });
+
+    allArticles = getDailyArticles();
+    displayArticles(allArticles);
+    const today = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+    document.getElementById('veille-last-update').textContent = `Mis à jour le ${today}`;
+  </script>
 </body>
 </html>
