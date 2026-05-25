@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>CMA CGM - Audit Ergonomique</title>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --cma-navy: #0A2540;
+      --cma-blue: #0066CC;
+      --cma-gold: #D4AF37;
+      --cma-green: #2A8C5A;
+      --cma-red: #C44536;
+      --gray-100: #F4F7FC;
+      --gray-200: #E9EDF2;
+      --gray-600: #5F6C80;
+      --shadow: 0 8px 20px rgba(0,0,0,0.05);
+    }
+    body { font-family: 'Inter', sans-serif; background: #F8FAFE; color: var(--cma-navy); }
+    .hero {
+      background: linear-gradient(135deg, #0A2540 0%, #0F3B5E 100%);
+      padding: 2rem 1.5rem;
+      text-align: center;
+      border-bottom: 3px solid var(--cma-gold);
+    }
+    .hero-badge { background: rgba(212,175,55,0.2); display: inline-block; padding: 0.3rem 1rem; border-radius: 40px; font-size: 0.7rem; color: var(--cma-gold); letter-spacing: 2px; margin-bottom: 1rem; }
+    .hero h1 { color: white; font-size: 1.8rem; font-weight: 700; }
+    .hero p { color: rgba(255,255,255,0.7); margin-top: 0.5rem; }
+    
+    .stepper-wrap { max-width: 1000px; margin: 1.5rem auto 0; padding: 0 1rem; }
+    .stepper {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem;
+      background: white; border-radius: 60px; padding: 0.5rem 1rem; box-shadow: var(--shadow);
+    }
+    .step-btn {
+      padding: 0.6rem 1.2rem; border-radius: 40px; font-size: 0.85rem; font-weight: 500;
+      background: transparent; color: var(--gray-600); cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .step-num { width: 26px; height: 26px; background: var(--gray-200); border-radius: 30px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; }
+    .step-btn.active { background: var(--cma-blue); color: white; }
+    .step-btn.active .step-num { background: white; color: var(--cma-blue); }
+    .step-btn.done { color: var(--cma-green); }
+    .step-btn.done .step-num { background: var(--cma-green); color: white; }
+    
+    .score-card { max-width: 1000px; margin: 1rem auto; padding: 0 1rem; }
+    .score-inner {
+      background: white; border-radius: 20px; padding: 1rem 1.5rem; display: flex; flex-wrap: wrap;
+      align-items: center; justify-content: space-between; gap: 1rem; box-shadow: var(--shadow);
+    }
+    .score-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; flex: 2; }
+    .progress-bar { flex: 2; height: 8px; background: var(--gray-200); border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--cma-red), var(--cma-gold), var(--cma-green)); border-radius: 10px; transition: width 0.3s; }
+    .score-pct { font-size: 1.5rem; font-weight: 800; min-width: 60px; }
+    .score-tag { padding: 0.3rem 1rem; border-radius: 30px; font-size: 0.75rem; font-weight: 600; }
+    
+    .container { max-width: 1000px; margin: 1.5rem auto 2rem; padding: 0 1rem; }
+    .panel { display: none; animation: fadeIn 0.25s ease; }
+    .panel.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .audit-card {
+      background: white; border-radius: 24px; padding: 1.8rem; margin-bottom: 1.5rem;
+      box-shadow: var(--shadow); border: 1px solid var(--gray-200);
+    }
+    .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; border-bottom: 2px solid var(--gray-200); padding-bottom: 0.8rem; }
+    .card-header h2 { font-size: 1.3rem; font-weight: 600; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; color: var(--gray-600); letter-spacing: 0.5px; }
+    input, select, textarea {
+      border: 1.5px solid var(--gray-200); border-radius: 14px; padding: 0.7rem 1rem;
+      font-family: 'Inter', sans-serif; font-size: 0.9rem; background: var(--gray-100);
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--cma-blue); background: white; }
+    
+    .checklist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.8rem; }
+    .check-item {
+      display: flex; align-items: center; gap: 12px; padding: 0.7rem 1rem;
+      background: var(--gray-100); border: 1.5px solid var(--gray-200); border-radius: 16px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .check-item.selected { background: #EFF7FF; border-color: var(--cma-blue); }
+    .check-item input { width: 18px; height: 18px; accent-color: var(--cma-blue); margin: 0; cursor: pointer; }
+    .check-item span { font-size: 0.85rem; font-weight: 500; }
+    
+    .nav-buttons { display: flex; justify-content: space-between; gap: 12px; margin-top: 0.5rem; }
+    .btn { padding: 0.7rem 1.8rem; border-radius: 40px; font-weight: 600; border: none; cursor: pointer; font-size: 0.85rem; background: white; border: 1px solid var(--gray-200); }
+    .btn-primary { background: var(--cma-blue); color: white; border: none; }
+    .btn-primary:hover { background: #0A4C8C; transform: translateY(-1px); }
+    .btn-export { background: var(--cma-navy); color: white; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-excel { background: #1F7B4D; }
+    
+    .recap-table { width: 100%; font-size: 0.8rem; border-collapse: collapse; }
+    .recap-table td { padding: 0.6rem 0.2rem; border-bottom: 1px solid var(--gray-200); }
+    
+    .solution-card {
+      background: #F8FAFE;
+      border-radius: 20px;
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid var(--cma-blue);
+    }
+    .solution-title {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--cma-navy);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .solution-desc {
+      font-size: 0.85rem;
+      color: var(--gray-600);
+      margin-bottom: 0.6rem;
+      line-height: 1.4;
+    }
+    .solution-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .solution-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: white;
+      padding: 5px 12px;
+      border-radius: 30px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--cma-blue);
+      text-decoration: none;
+      border: 1px solid var(--gray-200);
+      transition: all 0.2s;
+    }
+    .solution-link:hover {
+      background: var(--cma-blue);
+      color: white;
+      border-color: var(--cma-blue);
+    }
+    .ressources-footer {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--gray-200);
+      text-align: center;
+    }
+    .ressources-footer a {
+      color: var(--cma-blue);
+      text-decoration: none;
+      margin: 0 8px;
+      font-size: 0.75rem;
+    }
+    .toast { position: fixed; bottom: 20px; right: 20px; background: #1E2F41; color: white; padding: 12px 20px; border-radius: 40px; z-index: 999; opacity: 0; transform: translateY(20px); transition: 0.2s; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } .step-btn span:last-child { display: none; } .step-btn { padding: 0.5rem 0.8rem; } }
+  </style>
+</head>
+<body>
+<div class="hero">
+  <div class="hero-badge">AUDIT CMA CGM</div>
+  <h1>Fiche d'Audit Ergonomique</h1>
+  <p>Évaluation des conditions de travail & Préconisations</p>
+</div>
+
+<div class="stepper-wrap">
+  <div class="stepper" id="stepper">
+    <div class="step-btn" data-step="1"><span class="step-num">1</span><span>Identité</span></div>
+    <div class="step-btn" data-step="2"><span class="step-num">2</span><span>Ergonomie</span></div>
+    <div class="step-btn" data-step="3"><span class="step-num">3</span><span>Environnement</span></div>
+    <div class="step-btn" data-step="4"><span class="step-num">4</span><span>Télétravail</span></div>
+    <div class="step-btn" data-step="5"><span class="step-num">5</span><span>Rapport</span></div>
+  </div>
+</div>
+
+<div class="score-card">
+  <div class="score-inner">
+    <div class="score-left">
+      <span style="font-weight:600;">Score ergonomique</span>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <span class="score-pct" id="scorePercent">0%</span>
+    </div>
+    <span class="score-tag" id="scoreTag">En cours</span>
+  </div>
+</div>
+
+<div class="container" id="app">
+  <form id="auditForm">
+    <!-- PANEL 1 -->
+    <div class="panel" id="panel1">
+      <div class="audit-card">
+        <div class="card-header"><span style="font-size:1.8rem;">👤</span><h2>Informations collaborateur</h2></div>
+        <div class="form-grid">
+          <div class="field"><label>Nom complet *</label><input type="text" name="fullname" id="fullname" placeholder="Dupont Jean"></div>
+          <div class="field"><label>Site / Direction</label><input type="text" name="site" placeholder="Marseille - CMA Terminals"></div>
+          <div class="field"><label>Poste occupé</label><input type="text" name="role" placeholder="Chef de projet logistique"></div>
+          <div class="field"><label>Date audit</label><input type="date" name="auditDate" id="auditDate"></div>
+          <div class="field"><label>Auditeur</label><input type="text" name="auditor" placeholder="Responsable HSE"></div>
+          <div class="field"><label>Ancienneté</label><select name="seniority"><option value="">--</option><option>Moins 6 mois</option><option>6 mois-2 ans</option><option>2-5 ans</option><option>+5 ans</option></select></div>
+        </div>
+      </div>
+      <div class="nav-buttons"><div></div><button type="button" class="btn btn-primary" id="nextStep1">Suivant →</button></div>
+    </div>
+
+    <!-- PANEL 2 -->
+    <div class="panel" id="panel2">
+      <div class="audit-card">
+        <div class="card-header"><span style="font-size:1.8rem;">🪑</span><h2>Analyse du poste de travail</h2></div>
+        <div class="checklist-grid" id="ergoChecklist"></div>
+        <div class="field" style="margin-top: 1rem;"><label>Accessoires (repose-pied, support lombaire...)</label><input type="text" name="accessories" placeholder="ex: repose-pied, tapis souris"></div>
+        <div class="field"><label>Observations ergonomiques</label><textarea name="obsErgo" rows="2" placeholder="Douleurs, position contraignante..."></textarea></div>
+      </div>
+      <div class="nav-buttons"><button type="button" class="btn" id="prevStep2">← Précédent</button><button type="button" class="btn btn-primary" id="nextStep2">Suivant →</button></div>
+    </div>
+
+    <!-- PANEL 3 -->
+    <div class="panel" id="panel3">
+      <div class="audit-card">
+        <div class="card-header"><span style="font-size:1.8rem;">🌡️</span><h2>Environnement & Confort</h2></div>
+        <div class="form-grid">
+          <div class="field"><label>Filtre anti-reflet</label><select name="antiglare"><option value="">--</option><option value="Oui">Oui</option><option value="Non">Non</option></select></div>
+          <div class="field"><label>Éclairage</label><select name="lighting"><option>Chaud (confortable)</option><option>Froid (fatigant)</option><option>Mixte / Naturel</option></select></div>
+          <div class="field"><label>Intensité lumineuse</label><select name="lightIntensity"><option>Adaptée</option><option>Trop forte</option><option>Insuffisante</option></select></div>
+          <div class="field"><label>Nuisances sonores</label><select name="noise"><option value="Oui">Calme / conforme</option><option value="Non">Bruit gênant</option></select></div>
+          <div class="field"><label>Température ambiante</label><select name="temp"><option value="Oui">Confortable (21-26°C)</option><option value="Non">Inconfortable</option></select></div>
+          <div class="field"><label>Qualité air / ventilation</label><select name="airQuality"><option>Bonne</option><option>Insuffisante</option></select></div>
+          <div class="field"><label>Espace de travail</label><select name="workspace"><option>Ouvert / fonctionnel</option><option>Semi-ouvert</option><option>Restreint</option></select></div>
+          <div class="field"><label>Bureau réglable (assis-debout)</label><select name="heightAdjustable"><option value="Oui">Oui</option><option value="Non">Non</option></select></div>
+        </div>
+        <div class="field"><label>Observations environnement</label><textarea name="obsEnv" rows="2"></textarea></div>
+      </div>
+      <div class="nav-buttons"><button type="button" class="btn" id="prevStep3">← Précédent</button><button type="button" class="btn btn-primary" id="nextStep3">Suivant →</button></div>
+    </div>
+
+    <!-- PANEL 4 -->
+    <div class="panel" id="panel4">
+      <div class="audit-card">
+        <div class="card-header"><span style="font-size:1.8rem;">🏠</span><h2>Télétravail & équipement</h2></div>
+        <div class="form-grid">
+          <div class="field"><label>Pratique du télétravail</label><select name="remoteWork"><option>Non</option><option>Oui régulier</option><option>Occasionnel</option></select></div>
+          <div class="field"><label>Fréquence (jours/semaine)</label><select name="remoteDays"><option>1j</option><option>2j</option><option>3j+</option></select></div>
+          <div class="field"><label>Nombre d'écrans à domicile</label><select name="homeScreens"><option>1</option><option>2</option><option>3+</option></select></div>
+          <div class="field"><label>Siège ergonomique réglable</label><select name="homeChair"><option value="Oui">Oui</option><option value="Non">Non</option></select></div>
+          <div class="field"><label>État du siège</label><select name="chairState"><option>Bon état</option><option>Acceptable</option><option>Détérioré</option></select></div>
+          <div class="field"><label>Bureau dédié à domicile</label><select name="dedicatedDesk"><option value="Oui">Oui</option><option value="Non">Non</option></select></div>
+        </div>
+        <div class="field"><label>Observations télétravail</label><textarea name="obsRemote" rows="2"></textarea></div>
+      </div>
+      <div class="nav-buttons"><button type="button" class="btn" id="prevStep4">← Précédent</button><button type="button" class="btn btn-primary" id="nextStep4">Suivant →</button></div>
+    </div>
+
+    <!-- PANEL 5 -->
+    <div class="panel" id="panel5">
+      <div class="audit-card">
+        <div class="card-header"><span style="font-size:1.8rem;">📋</span><h2>Récapitulatif de l'audit</h2></div>
+        <div id="recapContainer"></div>
+      </div>
+      <div class="audit-card">
+        <div class="card-header"><span style="font-size:1.8rem;">🔧</span><h2>Préconisations personnalisées</h2></div>
+        <div id="solutionsContainer"></div>
+        <div class="ressources-footer">
+          <p style="font-size:0.75rem; color:var(--gray-600); margin-bottom:10px;">🔗 Ressources utiles en ergonomie :</p>
+          <a href="https://www.inrs.fr" target="_blank">INRS</a> | 
+          <a href="https://www.ameli.fr" target="_blank">Ameli</a> | 
+          <a href="https://www.anact.fr" target="_blank">Anact</a> | 
+          <a href="https://www.oppbtp.fr" target="_blank">OPPBTP</a> | 
+          <a href="https://www.anses.fr" target="_blank">Anses</a> | 
+          <a href="https://www.cma-cgm.com/fr/health-safety-environment" target="_blank">CMA CGM QHSE</a>
+        </div>
+      </div>
+      <div class="nav-buttons" style="flex-wrap:wrap;">
+        <button type="button" class="btn" id="prevStep5">← Modifier</button>
+        <button type="button" class="btn btn-export btn-excel" id="exportExcelBtn">📎 Export Excel</button>
+        <button type="button" class="btn btn-export" id="exportPdfBtn">📑 Export PDF</button>
+      </div>
+    </div>
+  </form>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+  // Liste des critères ergonomiques
+  const ergoItems = [
+    { name: "Pieds à plat / repose-pied", key: "feetFlat" },
+    { name: "Cuisses horizontales (hauteur siège)", key: "thighs" },
+    { name: "Dossier lombaire / soutien dos", key: "backSupport" },
+    { name: "Avant-bras posés / accoudoirs", key: "forearms" },
+    { name: "Distance écran 50-70cm", key: "screenDist" },
+    { name: "Matériel à portée de main", key: "reach" },
+    { name: "Clavier ergonomique / repose-poignet", key: "keyboard" },
+    { name: "Écran réglable en hauteur", key: "screenAdjust" }
+  ];
+
+  function buildChecklist() {
+    const container = document.getElementById('ergoChecklist');
+    container.innerHTML = '';
+    ergoItems.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'check-item';
+      div.innerHTML = `<input type="checkbox" name="${item.key}" value="Oui"> <span>${item.name}</span>`;
+      div.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'INPUT') {
+          const cb = div.querySelector('input');
+          cb.checked = !cb.checked;
+          updateCheckStyle(div, cb.checked);
+          updateScore();
+        }
+      });
+      const cb = div.querySelector('input');
+      cb.addEventListener('change', (e) => { e.stopPropagation(); updateCheckStyle(div, cb.checked); updateScore(); });
+      container.appendChild(div);
+    });
+  }
+  function updateCheckStyle(div, checked) { if(checked) div.classList.add('selected'); else div.classList.remove('selected'); }
+  buildChecklist();
+
+  let currentStep = 1;
+  function showStep(step) {
+    document.querySelectorAll('.panel').forEach((panel, idx) => { panel.classList.remove('active'); });
+    document.getElementById(`panel${step}`).classList.add('active');
+    document.querySelectorAll('.step-btn').forEach(btn => {
+      const s = parseInt(btn.dataset.step);
+      btn.classList.remove('active', 'done');
+      if (s === step) btn.classList.add('active');
+      else if (s < step) btn.classList.add('done');
+    });
+    currentStep = step;
+    if (step === 5) generateRecapAndSolutions();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    updateScore();
+  }
+
+  function validateStep1() {
+    const nom = document.getElementById('fullname').value.trim();
+    if (!nom) { showToast("Veuillez renseigner le nom complet"); return false; }
+    return true;
+  }
+
+  document.getElementById('nextStep1').addEventListener('click', () => { if(validateStep1()) showStep(2); });
+  document.getElementById('prevStep2').addEventListener('click', () => showStep(1));
+  document.getElementById('nextStep2').addEventListener('click', () => showStep(3));
+  document.getElementById('prevStep3').addEventListener('click', () => showStep(2));
+  document.getElementById('nextStep3').addEventListener('click', () => showStep(4));
+  document.getElementById('prevStep4').addEventListener('click', () => showStep(3));
+  document.getElementById('nextStep4').addEventListener('click', () => showStep(5));
+  document.getElementById('prevStep5').addEventListener('click', () => showStep(4));
+  
+  document.querySelectorAll('.step-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const step = parseInt(btn.dataset.step);
+      if (step === 1) { showStep(1); }
+      else if (step > currentStep && currentStep === 1 && !validateStep1()) { showToast("Veuillez remplir le nom"); return; }
+      showStep(step);
+    });
+  });
+
+  function computeScore() {
+    let total = 0, achieved = 0;
+    ergoItems.forEach(item => {
+      const cb = document.querySelector(`input[name="${item.key}"]`);
+      if (cb) { total++; if (cb.checked) achieved++; }
+    });
+    const selectList = ['antiglare', 'noise', 'temp', 'heightAdjustable', 'homeChair', 'dedicatedDesk'];
+    selectList.forEach(name => {
+      const sel = document.querySelector(`select[name="${name}"]`);
+      if (sel && sel.value === 'Oui') { total++; achieved++; }
+      else if (sel && sel.value && sel.value !== '') total++;
+    });
+    const lighting = document.querySelector('select[name="lighting"]');
+    if (lighting && lighting.value === 'Chaud (confortable)') { total++; achieved++; }
+    else if (lighting && lighting.value !== '') total++;
+    const air = document.querySelector('select[name="airQuality"]');
+    if (air && air.value === 'Bonne') { total++; achieved++; }
+    else if (air && air.value !== '') total++;
+    const intensity = document.querySelector('select[name="lightIntensity"]');
+    if (intensity && intensity.value === 'Adaptée') { total++; achieved++; }
+    else if (intensity && intensity.value !== '') total++;
+    if (total === 0) return 0;
+    return Math.round((achieved / total) * 100);
+  }
+
+  function updateScore() {
+    const pct = computeScore();
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('scorePercent').innerText = pct + '%';
+    const tag = document.getElementById('scoreTag');
+    if (pct >= 75) { tag.innerText = '✅ Très bon niveau'; tag.style.background = '#E0F5EC'; tag.style.color = '#1F7840'; }
+    else if (pct >= 50) { tag.innerText = '⚡ Améliorable'; tag.style.background = '#FFF2E0'; tag.style.color = '#C25D00'; }
+    else { tag.innerText = '⚠️ Prioritaire / Non conforme'; tag.style.background = '#FFEBEA'; tag.style.color = '#C13C2C'; }
+  }
+
+  function collectFormData() {
+    const data = {};
+    const inputs = document.querySelectorAll('#auditForm input, #auditForm select, #auditForm textarea');
+    inputs.forEach(el => {
+      if (el.name) {
+        if (el.type === 'checkbox') data[el.name] = el.checked ? 'Oui' : 'Non';
+        else data[el.name] = el.value || '';
+      }
+    });
+    ergoItems.forEach(item => {
+      const cb = document.querySelector(`input[name="${item.key}"]`);
+      if (cb) data[item.name] = cb.checked ? '✅ Conforme' : '❌ Non conforme';
+    });
+    return data;
+  }
+
+  function generateSolutions(data) {
+    const solutions = [];
+    if (data['feetFlat'] === 'Non') solutions.push("🦶 Installer un repose-pied réglable pour stabiliser la posture");
+    if (data['backSupport'] === 'Non') solutions.push("🪑 Ajouter un support lombaire ou remplacer le siège pour un meilleur maintien du dos");
+    if (data['screenDist'] === 'Non' || data['screenAdjust'] === 'Non') solutions.push("📺 Positionner l'écran à 50-70 cm des yeux, bord supérieur à hauteur des yeux");
+    if (data['antiglare'] === 'Non') solutions.push("☀️ Installer un filtre anti-reflet ou repositionner l'écran pour éviter les reflets");
+    if (data['noise'] === 'Non') solutions.push("🔊 Utiliser un casque anti-bruit ou installer des panneaux acoustiques");
+    if (data['temp'] === 'Non') solutions.push("🌡️ Vérifier la régulation thermique pour maintenir 21-26°C");
+    if (data['heightAdjustable'] === 'Non') solutions.push("📐 Opter pour un bureau assis-debout pour alterner les postures");
+    if (data['remoteWork'] && data['remoteWork'] !== 'Non' && data['homeChair'] === 'Non') solutions.push("🏠 Fournir un siège ergonomique pour le télétravail");
+    if (data['dedicatedDesk'] === 'Non') solutions.push("🍽️ Aménager un espace de travail dédié à domicile");
+    if (data['keyboard'] === 'Non') solutions.push("⌨️ Utiliser un clavier ergonomique avec repose-poignet");
+    if (solutions.length === 0) solutions.push("✔️ Aucune action corrective majeure - Maintenez les bonnes pratiques");
+    return solutions;
+  }
+
+  function generateRecapAndSolutions() {
+    const data = collectFormData();
+    let recapHtml = `<table class="recap-table">`;
+    recapHtml += `<tr><td colspan="2" style="font-weight:700; padding-top:8px;">👤 IDENTITÉ</td></tr>
+                   <tr><td style="padding:6px 0;">Nom</td><td>${data.fullname || '—'}</td></tr>
+                   <tr><td style="padding:6px 0;">Site / Poste</td><td>${data.site || '—'} / ${data.role || '—'}</td></tr>
+                   <tr><td style="padding:6px 0;">Date / Auditeur</td><td>${data.auditDate || '—'} / ${data.auditor || '—'}</td></tr>
+                   <tr><td colspan="2" style="font-weight:700; padding-top:12px;">🪑 ERGONOMIE</td></tr>`;
+    ergoItems.forEach(item => { recapHtml += `<tr><td style="padding:4px 0;">${item.name}</td><td>${data[item.name] || '—'}</td></tr>`; });
+    recapHtml += `<tr><td colspan="2" style="font-weight:700; padding-top:12px;">🌡️ ENVIRONNEMENT</td></tr>
+                   <tr><td style="padding:4px 0;">Anti-reflet</td><td>${data.antiglare || '—'}</td></tr>
+                   <tr><td style="padding:4px 0;">Température / Bruit</td><td>${data.temp === 'Oui' ? 'Confortable' : data.temp || '—'} / ${data.noise === 'Oui' ? 'Calme' : data.noise || '—'}</td></tr>
+                   <tr><td colspan="2" style="font-weight:700; padding-top:12px;">🏠 TÉLÉTRAVAIL</td></tr>
+                   <tr><td style="padding:4px 0;">Siège ergo / Bureau dédié</td><td>${data.homeChair === 'Oui' ? 'Oui' : 'Non'} / ${data.dedicatedDesk === 'Oui' ? 'Oui' : 'Non'}</td></tr>
+                   <tr><td style="padding:4px 0;"><strong>Score global</strong></td><td><strong>${computeScore()}%</strong></td></tr>
+                 </table>`;
+    document.getElementById('recapContainer').innerHTML = recapHtml;
+    
+    const solutions = generateSolutions(data);
+    let solHtml = `<div style="background:#F4F9FE; border-radius:20px; padding:1rem;"><ul style="margin-left:1rem; display:flex; flex-direction:column; gap:8px;">`;
+    solutions.forEach(s => solHtml += `<li style="font-size:0.85rem;">✓ ${s}</li>`);
+    solHtml += `</ul></div>`;
+    document.getElementById('solutionsContainer').innerHTML = solHtml;
+  }
+
+  function exportToPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const data = collectFormData();
+    const solutions = generateSolutions(data);
+    
+    doc.setFillColor(10,37,64); doc.rect(0,0,210,35,'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(18); doc.text('CMA CGM - Audit Ergonomique', 15, 18);
+    doc.setFontSize(10); doc.text(`Collaborateur: ${data.fullname || '—'} | Date: ${data.auditDate || '—'}`, 15, 28);
+    let y = 48;
+    const addLine = (label, val) => { if(y>270){doc.addPage(); y=20;} doc.setFontSize(9); doc.setTextColor(80,80,100); doc.text(label, 15, y); doc.setTextColor(0,0,0); doc.text(val || '—', 70, y); y+=6; };
+    addLine('Site', data.site); addLine('Poste', data.role); addLine('Auditeur', data.auditor);
+    y+=4; doc.setFontSize(10); doc.setTextColor(10,37,64); doc.setFont('helvetica','bold'); doc.text('Critères ergonomiques',15,y); y+=6;
+    ergoItems.forEach(item => { const val = data[item.name] || 'Non mesuré'; doc.setFontSize(8); doc.text(`• ${item.name}: ${val}`, 20, y); y+=5; });
+    y+=8; doc.setFontSize(11); doc.setTextColor(10,37,64); doc.text('PRÉCONISATIONS',15,y); y+=6;
+    solutions.forEach((sol,idx)=>{ if(y>270){doc.addPage(); y=20;} doc.setFontSize(9); doc.text(`${idx+1}. ${sol}`, 15, y); y+=6; });
+    doc.setFontSize(7); doc.setTextColor(150,150,170); doc.text(`Généré le ${new Date().toLocaleDateString()} - CMA CGM HSE`, 15, 285);
+    doc.save(`audit_ergo_${data.fullname || 'rapport'}.pdf`);
+    showToast("PDF généré");
+  }
+
+  function exportToExcel() {
+    const data = collectFormData();
+    const solutions = generateSolutions(data);
+    const exportObj = { ...data, 'Préconisations': solutions.join(' | ') };
+    const ws = XLSX.utils.json_to_sheet([exportObj]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Audit CMA CGM');
+    XLSX.writeFile(wb, `Audit_CMA_${data.fullname || 'export'}.xlsx`);
+    showToast("Export Excel réussi");
+  }
+
+  function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+
+  document.getElementById('exportExcelBtn').addEventListener('click', exportToExcel);
+  document.getElementById('exportPdfBtn').addEventListener('click', exportToPDF);
+  document.getElementById('auditForm').addEventListener('change', () => { updateScore(); if(currentStep === 5) generateRecapAndSolutions(); });
+  document.getElementById('auditDate').valueAsDate = new Date();
+  showStep(1);
+</script>
+</body>
+</html>
