@@ -275,7 +275,7 @@
       font-size: 0.68rem;
       color: var(--accent);
     }
-    .project-links { display: flex; gap: 0.8rem; }
+    .project-links { display: flex; gap: 0.8rem; flex-wrap: wrap; }
     .project-link {
       font-family: 'DM Mono', monospace;
       font-size: 0.75rem;
@@ -534,7 +534,7 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ===== MODALE POUR L'AUDIT ===== */
+    /* ===== MODALES ===== */
     .modal {
       display: none;
       position: fixed;
@@ -576,6 +576,46 @@
     }
     .close-modal:hover {
       color: var(--accent);
+    }
+    
+    /* Modale pour l'Excel */
+    .excel-modal-content {
+      max-width: 95%;
+      width: 1400px;
+    }
+    .excel-table-container {
+      overflow-x: auto;
+      padding: 20px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+    }
+    .excel-table {
+      border-collapse: collapse;
+      width: 100%;
+      background: var(--surface);
+    }
+    .excel-table th, .excel-table td {
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .excel-table th {
+      background: var(--card);
+      color: var(--accent);
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+    }
+    .excel-table td {
+      color: var(--text);
+    }
+    .excel-actions {
+      display: flex;
+      gap: 10px;
+      padding: 20px;
+      justify-content: flex-end;
+      border-top: 1px solid var(--border);
     }
     
     /* Animation fadeUp */
@@ -693,19 +733,20 @@
           </div>
         </div>
 
-        <!-- ===== PROJET 2 ===== -->
+        <!-- ===== PROJET 2 - Tableau de synthèse Epreuve E4 ===== -->
         <div class="project-card">
-          <span class="project-badge">2025</span>
-          <h3>Application de Gestion</h3>
-          <p>Application de gestion complète avec interface moderne, gestion des utilisateurs, tableau de bord analytique et export de données.</p>
+          <span class="project-badge">2024-2025</span>
+          <h3>Tableau de synthèse - Épreuve E4</h3>
+          <p>Tableau de synthèse des réalisations professionnelles dans le cadre du BTS SIO. Ce document récapitule l'ensemble des compétences mises en œuvre durant ma formation et mes stages, avec le détail des périodes et des réalisations effectuées.</p>
           <div class="project-tags">
-            <span class="tag">React</span>
-            <span class="tag">Node.js</span>
-            <span class="tag">PostgreSQL</span>
+            <span class="tag">BTS SIO</span>
+            <span class="tag">Compétences</span>
+            <span class="tag">Tableau de bord</span>
+            <span class="tag">Excel</span>
           </div>
           <div class="project-links">
-            <a href="https://github.com/lested973" target="_blank" class="project-link">⌥ GitHub</a>
-            <a href="#" target="_blank" class="project-link">↗ Live</a>
+            <a class="project-link" id="openExcelBtn">📊 Visualiser le tableau de synthèse</a>
+            <a href="#" id="downloadExcelBtn" class="project-link">⬇️ Télécharger le fichier</a>
           </div>
         </div>
 
@@ -856,9 +897,114 @@
     </div>
   </div>
 
+  <!-- ===== MODALE POUR L'EXCEL ===== -->
+  <div id="excelModal" class="modal">
+    <div class="modal-content excel-modal-content">
+      <span class="close-modal" id="closeExcelModal">&times;</span>
+      <div class="excel-table-container" id="excelTableContainer">
+        <div class="veille-loading">
+          <div class="spinner"></div>
+          Chargement du tableau...
+        </div>
+      </div>
+      <div class="excel-actions">
+        <button class="btn btn-primary" id="exportExcelBtn">📎 Exporter au format Excel</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // =============================================
-    // CODE COMPLET DE L'AUDIT (dans une variable)
+    // DONNÉES EXCEL INTÉGRÉES (Tableau de synthèse)
+    // Conversion du fichier Excel en données exploitables
+    // =============================================
+    const excelData = [
+      ["BTS SERVICES INFORMATIQUES AUX ORGANISATIONS", "", "", "", "", "SESSION 2025", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["Tableau de synthèse des réalisations professionnelles", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["NOM et prénom : MARIE-JOSEPH Stéddy", "", "", "", "N° candidat :", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["Centre de formation :", "", "", "", "Option :", "▢ SISR", "▢ SLAM", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["Adresse URL du portfolio :", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["Compétences mises en œuvre", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["Réalisations professionnelles", "Période", "Gérer le patrimoine informatique", "Répondre aux incidents", "Développer la présence en ligne", "Travailler en mode projet", "Mettre à disposition un service", "Organiser son développement", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["", "", "▸Recenser et identifier les ressources", "▸Collecter, suivre et orienter", "▸Participer à la valorisation", "▸Analyser les objectifs", "▸Réaliser les tests d’intégration", "▸Mettre en place son environnement", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["", "", "▸Exploiter des référentiels", "▸Traiter des demandes concernant", "▸Référencer les services en ligne", "▸Planifier les activités", "▸Déployer un service", "▸Mettre en œuvre des outils", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["", "", "▸Mettre en place et vérifier", "▸Traiter des demandes concernant", "▸Participer à l’évolution", "▸Évaluer les indicateurs", "▸Accompagner les utilisateurs", "▸Gérer son identité professionnelle", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["", "", "▸Vérifier les conditions", "", "", "", "", "▸Développer son projet professionnel", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["", "", "▸Gérer des sauvegardes", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["", "", "▸Vérifier le respect des règles", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["Réalisation en cours de formation", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["Utilisation de l'outil Kanboards.io", "21/11 au 21/12", "", "", "", "x", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["TP Boulangerie Or (gestion de bannière + valorisation du site)", "21/11 au 21/12", "", "", "x", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["Gestion de sauvegarde de base de données avec script Linux et CRON", "21/11 au 21/12", "x", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["Gestion de parc informatique avec OCS Inventory", "01/11/24 au 21/11/24", "x", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["Outils de veille", "", "", "", "", "", "x", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["Réalisations en milieu professionnel en cours de première année", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+      ["Réalisations en milieu professionnel en cours de seconde année", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
+    ];
+
+    // Fonction pour convertir les données en tableau HTML
+    function renderExcelTable() {
+      const container = document.getElementById('excelTableContainer');
+      if (!container) return;
+      
+      let html = '<table class="excel-table">';
+      
+      for (let i = 0; i < excelData.length; i++) {
+        const row = excelData[i];
+        // Vérifier si la ligne est vide (toutes les cellules sont vides ou undefined)
+        const isEmpty = row.every(cell => !cell || cell === "" || cell === undefined);
+        if (isEmpty && i > 20) continue;
+        
+        html += '<tr>';
+        for (let j = 0; j < row.length; j++) {
+          const cell = row[j] || "";
+          const tag = i === 0 || i === 1 || i === 2 || i === 3 || i === 4 ? 'th' : 'td';
+          let cellClass = '';
+          
+          // Mise en forme spéciale pour les en-têtes
+          if (i === 0) cellClass = 'excel-header-main';
+          if (i === 5 || i === 6) cellClass = 'excel-header-comp';
+          
+          html += `<${tag} class="${cellClass}" style="${i === 0 || i === 1 ? 'background: var(--accent); color: #0a0a0a; font-weight: bold;' : ''}">${escapeHtml(cell)}</${tag}>`;
+        }
+        html += '</tr>';
+      }
+      html += '</table>';
+      container.innerHTML = html;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Télécharger le fichier Excel original
+    function downloadExcelFile() {
+      // Créer un workbook à partir des données
+      const wsData = [];
+      for (let i = 0; i < excelData.length; i++) {
+        const row = excelData[i];
+        const isEmpty = row.every(cell => !cell || cell === "" || cell === undefined);
+        if (isEmpty && i > 20) continue;
+        wsData.push(row);
+      }
+      
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Tableau de synthese E4");
+      XLSX.writeFile(wb, "Tableau_de_synthese_Epreuve_E4_Steddy_MJS.xlsx");
+    }
+
+    // Exporter depuis la modale
+    function exportCurrentExcel() {
+      downloadExcelFile();
+    }
+
+    // =============================================
+    // CODE DE L'AUDIT (dans une variable)
     // =============================================
     const auditHTMLContent = `<!DOCTYPE html>
 <html lang="fr">
@@ -875,7 +1021,7 @@
     .header { background: #0A2540; color: white; padding: 20px; text-align: center; }
     .header h1 { font-size: 1.5rem; margin-bottom: 5px; }
     .header p { opacity: 0.8; font-size: 0.85rem; }
-    .steps { display: flex; justify-content: center; gap: 10px; padding: 20px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+    .steps { display: flex; justify-content: center; gap: 10px; padding: 20px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; flex-wrap: wrap; }
     .step { width: 40px; height: 40px; border-radius: 50%; background: #cbd5e1; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; transition: all 0.3s; }
     .step.active { background: #0066CC; color: white; }
     .step.done { background: #2A8C5A; color: white; }
@@ -890,7 +1036,7 @@
     .checkbox-group { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 15px 0; }
     .check-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f8fafc; border-radius: 10px; cursor: pointer; border: 1px solid #e2e8f0; }
     .check-item.selected { background: #e0f2fe; border-color: #0066CC; }
-    .btn-group { display: flex; justify-content: space-between; margin-top: 20px; }
+    .btn-group { display: flex; justify-content: space-between; margin-top: 20px; flex-wrap: wrap; gap: 10px; }
     .btn { padding: 10px 24px; border-radius: 30px; font-weight: 600; cursor: pointer; border: none; font-size: 0.85rem; }
     .btn-primary { background: #0066CC; color: white; }
     .btn-primary:hover { background: #0052a3; }
@@ -904,7 +1050,7 @@
     .solution-link:hover { background: #0066CC; color: white; }
     .footer-links { margin-top: 20px; padding-top: 15px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 0.7rem; }
     .footer-links a { color: #0066CC; text-decoration: none; margin: 0 8px; }
-    @media (max-width: 640px) { .checkbox-group { grid-template-columns: 1fr; } .steps { flex-wrap: wrap; } }
+    @media (max-width: 640px) { .checkbox-group { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -1006,7 +1152,7 @@
     
     const solutions = [];
     if(formData.ergo['Pieds à plat / repose-pied'] === false) solutions.push({title:"🦶 Pieds non stabilisés", desc:"Installer un repose-pied réglable pour améliorer la posture.", links:["https://www.inrs.fr/risques/tms/prevention/positions-assises.html","https://www.ameli.fr/assure/sante/themes/maladies-liees-travail-ecran/prevenir-tms"]});
-    if(formData.ergo['Dossier lombaire'] === false) solutions.push({title:"🪑 Soutien lombaire insuffisant", desc:"Ajouter un support lombaire ou remplacer le siège.", links:["https://www.inrs.fr/risques/tms/medias/guide-choix-siege-bureau.html","https://www.ameli.fr/assure/sante/themes/mal-de-dos/prevention-mal-dos-travail"]});
+    if(formData.ergo['Dossier lombaire'] === false) solutions.push({title:"🪑 Soutien lombaire insuffisant", desc:"Ajouter un support lombaire ou remplacer le siège.", links:["https://www.inrs.fr/risques/tms/medias/guide-choix-siege-bureau.html","https://www.ameli.fr/assure/sante/themes/mal-dos/prevention-mal-dos-travail"]});
     if(formData.ergo['Distance écran 50-70cm'] === false || formData.ergo['Écran réglable'] === false) solutions.push({title:"📺 Position écran inadaptée", desc:"Placer l'écran à 50-70 cm, bord supérieur à hauteur des yeux.", links:["https://www.inrs.fr/risques/ecrans-sante-travail/regles-ergonomiques.html","https://www.anses.fr/fr/content/ecrans-et-sante"]});
     if(formData.antiglare === 'Non') solutions.push({title:"☀️ Reflets sur l'écran", desc:"Installer un filtre anti-reflet ou repositionner l'écran.", links:["https://www.inrs.fr/risques/ergonomie/principes-ergonomiques-eclairage.html"]});
     if(formData.noise === 'Non') solutions.push({title:"🔊 Nuisances sonores", desc:"Utiliser un casque anti-bruit ou installer des panneaux acoustiques.", links:["https://www.inrs.fr/risques/bruit/prevention.html"]});
@@ -1059,30 +1205,75 @@
 <\/html>`;
 
     // =============================================
-    // GESTION DE LA MODALE
+    // GESTION DE LA MODALE POUR L'AUDIT
     // =============================================
-    const modal = document.getElementById('auditModal');
-    const openBtn = document.getElementById('openAuditBtn');
-    const closeBtn = document.querySelector('.close-modal');
+    const modalAudit = document.getElementById('auditModal');
+    const openAuditBtn = document.getElementById('openAuditBtn');
+    const closeAuditBtn = document.querySelector('#auditModal .close-modal');
     const iframe = document.getElementById('auditIframe');
 
-    openBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      // Écrire le contenu HTML dans l'iframe
-      const iframeDoc = iframe.contentWindow.document;
-      iframeDoc.open();
-      iframeDoc.write(auditHTMLContent);
-      iframeDoc.close();
-      modal.style.display = 'block';
-    });
+    if (openAuditBtn) {
+      openAuditBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const iframeDoc = iframe.contentWindow.document;
+        iframeDoc.open();
+        iframeDoc.write(auditHTMLContent);
+        iframeDoc.close();
+        modalAudit.style.display = 'block';
+      });
+    }
 
-    closeBtn.addEventListener('click', () => {
-      modal.style.display = 'none';
-    });
+    if (closeAuditBtn) {
+      closeAuditBtn.addEventListener('click', () => {
+        modalAudit.style.display = 'none';
+      });
+    }
 
     window.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.style.display = 'none';
+      if (e.target === modalAudit) {
+        modalAudit.style.display = 'none';
+      }
+    });
+
+    // =============================================
+    // GESTION DE LA MODALE POUR L'EXCEL
+    // =============================================
+    const modalExcel = document.getElementById('excelModal');
+    const openExcelBtn = document.getElementById('openExcelBtn');
+    const closeExcelBtn = document.getElementById('closeExcelModal');
+    const exportExcelBtn = document.getElementById('exportExcelBtn');
+    const downloadExcelBtn = document.getElementById('downloadExcelBtn');
+
+    if (openExcelBtn) {
+      openExcelBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        renderExcelTable();
+        modalExcel.style.display = 'block';
+      });
+    }
+
+    if (closeExcelBtn) {
+      closeExcelBtn.addEventListener('click', () => {
+        modalExcel.style.display = 'none';
+      });
+    }
+
+    if (exportExcelBtn) {
+      exportExcelBtn.addEventListener('click', () => {
+        exportCurrentExcel();
+      });
+    }
+
+    if (downloadExcelBtn) {
+      downloadExcelBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        downloadExcelFile();
+      });
+    }
+
+    window.addEventListener('click', (e) => {
+      if (e.target === modalExcel) {
+        modalExcel.style.display = 'none';
       }
     });
 
